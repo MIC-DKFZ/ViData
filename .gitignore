@@ -1,3 +1,10 @@
+# Local dev/testing scripts and folders
+playground.py
+stats/
+dataset_cfg/
+tests/temp/
+nodes.md
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

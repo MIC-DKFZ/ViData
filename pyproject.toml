@@ -1,5 +1,5 @@
 [project]
-name = "data-io"
+name = "vidata"
 dynamic = ["version"]
 description = "Data IO"
 readme = "README.md"
@@ -10,7 +10,6 @@ authors = [
 ]
 classifiers = [
     "Development Status :: 2 - Pre-Alpha",
-    "Framework :: napari",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
@@ -26,6 +25,16 @@ classifiers = [
 requires-python = ">=3.10"
 dependencies = [
     "numpy",
+    "blosc2==3.0.0b4",
+    "SimpleITK",
+    "nibabel",
+    "imageio",
+    "tifffile",
+    "plotly",
+    "kaleido", # for plotly
+    "natsort",
+    "omegaconf",
+    "pyyaml"
 ]
 
 [project.optional-dependencies]
@@ -35,14 +44,9 @@ testing = [
     "pytest-cov",  # https://pytest-cov.readthedocs.io/en/latest/
 ]
 
-[project.entry-points."napari.manifest"]
-data-io = "data_io:napari.yaml"
-
 [project.urls]
-"Bug Tracker" = "https://github.com/Lars-Kraemer/data-io/issues"
-"Documentation" = "https://github.com/Lars-Kraemer/data-io#README.md"
-"Source Code" = "https://github.com/Lars-Kraemer/data-io"
-"User Support" = "https://github.com/Lars-Kraemer/data-io/issues"
+"Documentation" = "https://github.com/MIC-DKFZ/vidata#README.md"
+"Source Code" = "https://github.com/MIC-DKFZ/vidata"
 
 [build-system]
 requires = ["setuptools>=42.0.0", "wheel"]
@@ -59,14 +63,14 @@ where = ["src"]
 
 
 [tool.setuptools.dynamic]
-version = {attr = "data_io.__init__.__version__"}
+version = {attr = "vidata.__init__.__version__"}
 
 [tool.black]
-line-length = 79
+line-length = 100
 target-version = ['py310', 'py311', 'py312', 'py313']
 
 [tool.ruff]
-line-length = 79
+line-length = 100
 lint.select = [
     "E", "F", "W", #flake8
     "UP", # pyupgrade
@@ -84,6 +88,7 @@ lint.ignore = [
     "E501", # line too long. let black handle this
     "UP006", "UP007", # type annotation. As using magicgui require runtime type annotation then we disable this.
     "SIM117", # flake8-simplify - some of merged with statements are not looking great with black, reanble after drop python 3.9
+    #"E203", "W503", # match black
 ]
 
 exclude = [
@@ -97,6 +102,7 @@ exclude = [
     ".svn",
     ".tox",
     ".venv",
+    ".idea",
     "__pypackages__",
     "_build",
     "buck-out",
@@ -110,3 +116,7 @@ exclude = [
 
 target-version = "py310"
 fix = true
+
+[tool.pytest.ini_options]
+addopts = "--basetemp=./tests/temp/"
+testpaths = ["tests"]

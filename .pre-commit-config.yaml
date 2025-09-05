@@ -1,27 +1,84 @@
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v4.6.0
     hooks:
-      - id: check-docstring-first
-      - id: end-of-file-fixer
       - id: trailing-whitespace
-        exclude: ^\.napari-hub/.*
-      - id: check-yaml # checks for correct yaml syntax for github actions ex.
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.4
-    hooks:
-      - id: ruff
+      - id: end-of-file-fixer
+      - id: check-merge-conflict
+      - id: mixed-line-ending
+      - id: check-yaml
+      - id: check-toml
+      - id: debug-statements
+      - id: detect-private-key
+      - id: check-added-large-files
+
+  # Python formatter
   - repo: https://github.com/psf/black
-    rev: 25.1.0
+    rev: 24.4.2
     hooks:
       - id: black
-  - repo: https://github.com/tlambert03/napari-plugin-checks
-    rev: v0.3.0
+
+  # Ruff = linter + import sorter + some pyupgrade
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.12.8
     hooks:
-      - id: napari-plugin-checks
-  # https://mypy.readthedocs.io/en/stable/
-  # you may wish to add this as well!
-  # - repo: https://github.com/pre-commit/mirrors-mypy
-  #   rev: v1.9.0
-  #   hooks:
-  #     - id: mypy
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix] # auto-fix lint + imports (isort replacement)
+      #- id: ruff-format # optional: formatter (keep Black as source of truth or drop this)
+      #- id: ruff-check
+
+  # Optional: type checking
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.10.0
+    hooks:
+      - id: mypy
+        additional_dependencies: []
+        exclude: ^(logs/|data/)
+
+  #  # Security
+  #  - repo: https://github.com/PyCQA/bandit
+  #    rev: 1.7.6
+  #    hooks:
+  #      - id: bandit
+  #        args: ["-s", "B101,B311"]
+
+  # YAML formatting (stable)
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v3.1.0
+    hooks:
+      - id: prettier
+        types: [yaml]
+
+  # Markdown formatting
+  - repo: https://github.com/executablebooks/mdformat
+    rev: 0.7.17
+    hooks:
+      - id: mdformat
+        args: ["--number"]
+        additional_dependencies:
+          - mdformat-gfm
+          - mdformat-tables
+          - mdformat-frontmatter
+          - mdformat-black
+
+  # Spelling
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.3.0
+    hooks:
+      - id: codespell
+        args:
+          - --skip=logs/**,data/**,*.ipynb
+          - --ignore-words-list=conveyer
+
+  # Notebooks
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.6.2
+    hooks:
+      - id: nbstripout
+  - repo: https://github.com/nbQA-dev/nbQA
+    rev: 1.8.5
+    hooks:
+      - id: nbqa-black
+      - id: nbqa-ruff
+        args: ["--fix"]
+      # or keep nbqa-isort/flake8 if you don't switch to ruff

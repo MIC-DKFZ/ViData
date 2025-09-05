@@ -1,0 +1,42 @@
+name: DatasetName
+
+# Define an arbitrary number of layers
+layers:
+  - name: SomeImages # unique layer name
+    type: image # 'image' for image data and for label data one of: 'semseg' | 'multilabel'
+    path: some/path/to/data # directory
+    file_type: .png # required extension incl. dot (e.g., .png | .nii.gz | .b2nd)
+    pattern: # optional regex to filter files relative to 'path' without file_type
+    backend: # optional backend to load/write the data (e.g., sitk | nib) for .nii.gz, etc.
+    channels: 3 # number of channels, required for image
+    file_stack: False # True if each channel is a separate file: *_0000, *_0001, ...
+
+  - name: SomeLabels
+    type: semseg # semseg --> Semantic Segmentation | multilabel --> Multilabel Segmentation
+    path: some/path/to/data
+    file_type: .png|.nii.gz|.b2nd|...
+    pattern:
+    backend:
+    classes: 19 # number of classes, required for semseg/multilabel
+    file_stack: False # for multilabel: true if each class is a separate file: *_0000, *_0001, ...
+    ignore_bg: null # optional bool for labels; if true, class 0 is ignored in metrics and analysis
+    ignore_index: 255 # optional int for labels; label value to ignore in loss/eval
+
+# Splitting (optional)
+splits:
+  splits_file:
+    some/path/splits_final.json # optional: use a file to define splits, content can be:
+    # 1) object: {"train": [...], "val": [...], "test": [...]}
+    # 2) list of folds: [{"train": [...], "val": [...]}, {...}, ...]
+  # optional: Per-layer overrides for paths/patterns by split.
+  train:
+    SomeImages: # empty -> use defaults
+    SomeLabels: # empty -> use defaults
+  val:
+    SomeImages:
+      pattern: some_pattern # optional: example override for pattern parameter for layer and split
+      path: some/path/to/data # optional: example override for path parameter for layer and split
+    SomeLabels:
+      pattern: some_pattern
+      path: some/path/to/data
+  test: # empty --> split is not defined
