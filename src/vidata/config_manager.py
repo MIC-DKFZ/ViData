@@ -17,6 +17,14 @@ from vidata.task_manager import (
     SemanticSegmentationManager,
     TaskManager,
 )
+from vidata.writers import (
+    BaseWriter,
+    ImageStackWriter,
+    ImageWriter,
+    MultilabelStackedWriter,
+    MultilabelWriter,
+    SemSegWriter,
+)
 
 _VALID_SPLITS = ["train", "val", "test"]
 _IMAGE_LAYERS = {"image"}
@@ -29,6 +37,15 @@ _LOADER_MAPPING: dict[str, type[BaseLoader]] = {
 _STACKED_LOADER_MAPPING: dict[str, type[BaseLoader]] = {
     "image": ImageStackLoader,
     "multilabel": MultilabelStackedLoader,
+}
+_WRITER_MAPPING: dict[str, type[BaseWriter]] = {
+    "image": ImageWriter,
+    "semseg": SemSegWriter,
+    "multilabel": MultilabelWriter,
+}
+_STACKED_WRITER_MAPPING: dict[str, type[BaseWriter]] = {
+    "image": ImageStackWriter,
+    "multilabel": MultilabelStackedWriter,
 }
 
 
@@ -273,6 +290,25 @@ class LayerConfigManager:
             args["num_classes"] = self.classes
 
         return loader_cls(**args)
+
+    def data_writer(self) -> BaseWriter:
+        reg = _STACKED_WRITER_MAPPING if self.file_stack else _WRITER_MAPPING
+        try:
+            writer_cls = reg[self.type.lower()]
+        except KeyError as err:
+            raise ValueError(f"type {self.type} is not supported for layer {self.name}") from err
+
+        args = {
+            "ftype": self.file_type,
+            "backend": self.backend,
+        }
+
+        if self.type.lower() in _IMAGE_LAYERS:
+            args["channels"] = self.channels
+        elif self.type.lower() in _LABEL_LAYERS:
+            args["num_classes"] = self.classes
+
+        return writer_cls(**args)
 
     def task_manager(self) -> TaskManager:
         if self.type.lower() == "semseg":

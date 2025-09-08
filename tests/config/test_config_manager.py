@@ -6,6 +6,7 @@ from vidata import ConfigManager, LayerConfigManager
 from vidata.file_manager import FileManager
 from vidata.io import save_json
 from vidata.loaders import ImageLoader, MultilabelStackedLoader, SemSegLoader
+from vidata.writers import ImageWriter, MultilabelStackedWriter, SemSegWriter
 
 LEN_VAL = 4
 LEN_TRAIN = 6
@@ -141,13 +142,19 @@ def test_config_manager_splitfile(simple_config):
         assert layer.file_stack == l_conf.get("file_stack", False)
         assert layer.backend == l_conf["backend"]
 
-    for i, (ln, loader) in enumerate(
-        [("Images", ImageLoader), ("Labels", SemSegLoader), ("MLLabels", MultilabelStackedLoader)]
+    for i, (ln, loader, writer) in enumerate(
+        [
+            ("Images", ImageLoader, ImageWriter),
+            ("Labels", SemSegLoader, SemSegWriter),
+            ("MLLabels", MultilabelStackedLoader, MultilabelStackedWriter),
+        ]
     ):
         layer = cm.layer(ln)
 
         dl = layer.data_loader()
         assert isinstance(dl, loader)
+        df = layer.data_writer()
+        assert isinstance(df, writer)
 
         l_conf = layer.config()
         l_conf["pattern"] = simple_config["layers"][i]["pattern"]
@@ -188,13 +195,19 @@ def test_config_manager_splitfile_fold(simple_config):
         assert layer.file_stack == l_conf.get("file_stack", False)
         assert layer.backend == l_conf["backend"]
 
-    for i, (ln, loader) in enumerate(
-        [("Images", ImageLoader), ("Labels", SemSegLoader), ("MLLabels", MultilabelStackedLoader)]
+    for i, (ln, loader, writer) in enumerate(
+        [
+            ("Images", ImageLoader, ImageWriter),
+            ("Labels", SemSegLoader, SemSegWriter),
+            ("MLLabels", MultilabelStackedLoader, MultilabelStackedWriter),
+        ]
     ):
         layer = cm.layer(ln)
 
         dl = layer.data_loader()
         assert isinstance(dl, loader)
+        df = layer.data_writer()
+        assert isinstance(df, writer)
 
         l_conf = layer.config()
         l_conf["pattern"] = simple_config["layers"][i]["pattern"]
