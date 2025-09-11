@@ -21,7 +21,7 @@ def adjust_layout(
         figure.update_layout(
             xaxis={
                 "title": {"text": xaxis_title, "font": {"size": 18}},  # axis label font
-                "tickfont": {"size": 14},  # tick labels
+                # "tickfont": {"size": 14},  # tick labels
             }
         )
     else:

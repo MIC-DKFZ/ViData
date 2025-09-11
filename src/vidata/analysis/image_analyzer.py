@@ -47,7 +47,7 @@ class ImageAnalyzer(Analyzer):
     def analyze_case(self, index, verbose=False):
         file = self.file_manager[index]
         data, meta = self.data_loader.load(file)
-
+        data = data[...]  # To resolve memmap dtypes
         stats = {
             "name": file.name,
             "dtype": str(data.dtype),

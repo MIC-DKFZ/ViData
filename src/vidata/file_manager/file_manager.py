@@ -38,25 +38,24 @@ class FileManager:
         self.pattern = pattern
         self.include_names = include_names
         self.exclude_names = exclude_names
-
         self.collect_files()
         self.filter_files()
 
     def filter_files(self):
         if self.include_names is not None:
+            _files_re = [str(_file.relative_to(self.path)) for _file in self.files]
             self.files = [
                 _file
-                for _file in list(self.files)
-                if any(_token in str(_file.relative_to(self.path)) for _token in self.include_names)
+                for _file, rel in zip(list(self.files), _files_re, strict=False)
+                if any(_token in rel for _token in self.include_names)
             ]
 
         if self.exclude_names is not None:
+            _files_re = [str(_file.relative_to(self.path)) for _file in self.files]
             self.files = [
                 _file
-                for _file in list(self.files)
-                if not any(
-                    _token in str(_file.relative_to(self.path)) for _token in self.exclude_names
-                )
+                for _file, rel in zip(list(self.files), _files_re, strict=False)
+                if not any(_token in rel for _token in self.exclude_names)
             ]
 
     def collect_files(self):
@@ -72,6 +71,14 @@ class FileManager:
             pattern = self.pattern
         files = list(Path(self.path).glob(pattern + self.file_type))
         self.files = natsorted(files, key=lambda p: p.name)
+
+    def get_name(self, file: str | int, with_file_type=True) -> str:
+        if isinstance(file, int):
+            file = str(self.files[file])
+        name = str(Path(file).relative_to(self.path))
+        if not with_file_type:
+            name = name.replace(self.file_type, "")
+        return name
 
     def __getitem__(self, item: int):
         return self.files[item]

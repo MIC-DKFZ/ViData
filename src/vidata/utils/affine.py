@@ -1,6 +1,81 @@
 from itertools import combinations
 
 import numpy as np
+from numpy.typing import ArrayLike
+
+
+def combine_scale(s1: ArrayLike, s2: ArrayLike) -> np.ndarray:
+    """
+    Elementwise combine scaling vectors.
+    s_total = s2 * s1  (order doesn't matter)
+    """
+    s1 = np.asarray(s1, dtype=float)
+    s2 = np.asarray(s2, dtype=float)
+    if s1.shape != s2.shape:
+        raise ValueError(f"scale shapes must match, got {s1.shape} vs {s2.shape}")
+    return s2 * s1
+
+
+def combine_translation(t1: ArrayLike, t2: ArrayLike) -> np.ndarray:
+    """
+    Add translations.
+    t_total = t2 + t1  (order doesn't matter for pure translations)
+    """
+    t1 = np.asarray(t1, dtype=float)
+    t2 = np.asarray(t2, dtype=float)
+    if t1.shape != t2.shape:
+        raise ValueError(f"translation shapes must match, got {t1.shape} vs {t2.shape}")
+    return t2 + t1
+
+
+def combine_rotation(R1: ArrayLike, R2: ArrayLike) -> np.ndarray:
+    """
+    Compose direction/rotation matrices.
+    R_total = R2 @ R1  (apply R1, then R2)
+    """
+    R1 = np.asarray(R1, dtype=float)
+    R2 = np.asarray(R2, dtype=float)
+    if R1.shape != R2.shape or R1.ndim != 2 or R1.shape[0] != R1.shape[1]:
+        raise ValueError(
+            f"rotation matrices must be same square shape, got {R1.shape} vs {R2.shape}"
+        )
+    return R2 @ R1
+
+
+def combine_shear(H1: ArrayLike, H2: ArrayLike) -> np.ndarray:
+    """
+    Compose shear matrices.
+    H_total = H2 @ H1  (apply H1, then H2)
+    """
+
+    def combine_shear_vectors_2d(s1, s2):
+        """2D shear: vectors are length-1: (s_xy,). H_total = H2 @ H1."""
+        s1 = float(np.asarray(s1).ravel()[0])
+        s2 = float(np.asarray(s2).ravel()[0])
+        return np.array([s2 + s1], dtype=float)
+
+    def combine_shear_vectors_3d(s1, s2):
+        """3D shear: vectors ordered (s_xy, s_xz, s_yz). H_total = H2 @ H1."""
+        s1 = np.asarray(s1, dtype=float).ravel()
+        s2 = np.asarray(s2, dtype=float).ravel()
+        if s1.size != 3 or s2.size != 3:
+            raise ValueError("3D shear vectors must have length 3: (s_xy, s_xz, s_yz).")
+
+        a1, b1, c1 = s1  # (xy, xz, yz) for first shear
+        a2, b2, c2 = s2  # (xy, xz, yz) for second shear
+
+        # totals when H_total = H2 @ H1
+        a = a2 + a1  # s_xy
+        c = c2 + c1  # s_yz
+        b = b2 + b1 + a2 * c1  # s_xz (cross-term!)
+        return np.array([a, b, c], dtype=float)
+
+    s1 = np.asarray(H1).ravel()
+    if s1.size == 1:
+        return combine_shear_vectors_2d(H1, H2)
+    if s1.size == 3:
+        return combine_shear_vectors_3d(H1, H2)
+    raise ValueError("Only 2D (len=1) and 3D (len=3) shear vectors are supported here.")
 
 
 def decompose_affine(

@@ -25,7 +25,7 @@ def save_tif(
     file: str,
     tile_size: int = 256,
     compression: str = "zlib",
-):
+) -> list[str]:
     """Save a NumPy array as a tiled, compressed TIFF (.tif) file.
 
     Args:
@@ -39,3 +39,4 @@ def save_tif(
         "compression": compression,
     }
     tifffile.imwrite(file, data, **options)
+    return [file]

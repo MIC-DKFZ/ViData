@@ -7,7 +7,7 @@ from vidata.utils.affine import build_affine, decompose_affine
 
 @register_writer("image", ".nii.gz", ".nii", backend="nibabel")
 @register_writer("mask", ".nii.gz", ".nii", backend="nibabel")
-def save_nib(data, file, metadata: dict | None = None) -> None:
+def save_nib(data, file, metadata: dict | None = None) -> list[str]:
     """
     Save a NumPy array and SITK-style metadata to a NIfTI file using nibabel.
 
@@ -56,6 +56,7 @@ def save_nib(data, file, metadata: dict | None = None) -> None:
 
     image_nib = nib.Nifti1Image(data, affine=affine_nib)
     nib.save(image_nib, str(file))
+    return [file]
 
 
 @register_loader("image", ".nii.gz", ".nii", backend="nibabel")

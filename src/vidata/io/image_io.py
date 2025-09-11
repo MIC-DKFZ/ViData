@@ -13,8 +13,9 @@ def load_image(file: str):
 
 @register_writer("image", ".png", ".jpg", ".jpeg", ".bmp", backend="imageio")
 @register_writer("mask", ".png", ".bmp", backend="imageio")
-def save_image(data: np.ndarray, file: str):
+def save_image(data: np.ndarray, file: str) -> list[str]:
     iio.imwrite(file, data)
+    return [file]
 
 
 # @register_loader("image", ".png", ".jpg", ".jpeg", ".bmp")

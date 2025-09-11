@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 
 from vidata.file_manager import FileManager, FileManagerStacked
 from vidata.io import load_json
@@ -264,7 +264,6 @@ class LayerConfigManager:
         include_names = None
         if self.splits_file is not None and split is not None:
             include_names = self.resolve_splits_file(split, fold)
-
         return manager_cls(
             path=_cfg["path"],
             file_type=_cfg["file_type"],
@@ -320,8 +319,11 @@ class LayerConfigManager:
 
 
 class ConfigManager:
-    def __init__(self, config: dict | DictConfig):
-        self.config = config
+    def __init__(self, config: dict | DictConfig | str):
+        if isinstance(config, str):
+            self.config = OmegaConf.load(config)
+        else:
+            self.config = config
         self.layers = []
 
         split_cfg = self.config.get("splits", {})
@@ -333,6 +335,7 @@ class ConfigManager:
                     ovrds = split_cfg[k][layer_cfg["name"]]
                     layer_split[k] = ovrds if ovrds is not None else {}
             lcm = LayerConfigManager(layer_cfg, layer_split, split_cfg.get("splits_file"))
+
             self.layers.append(lcm)
 
     @property
@@ -353,7 +356,6 @@ class ConfigManager:
 
 
 if __name__ == "__main__":
-    from omegaconf import DictConfig, OmegaConf
 
     path = "../../../dataset_cfg/Cityscapes.yaml"
     cfg = dict(OmegaConf.load(path))

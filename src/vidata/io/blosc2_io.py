@@ -20,12 +20,12 @@ from vidata.registry import register_loader, register_writer
 def save_blosc2(
     data: np.ndarray,
     file: str,
-    patch_size: Union[tuple[int, int], tuple[int, int, int]],
+    patch_size: Union[tuple[int, int], tuple[int, int, int]] | None = None,
     clevel: int = 8,
     nthreads: int = 8,
     codec: blosc2.Codec = blosc2.Codec.ZSTD,
     metadata: dict | None = None,
-):
+) -> list[str]:
     """Saves a NumPy array to a Blosc2 file with specified compression parameters.
 
     Args:
@@ -37,6 +37,18 @@ def save_blosc2(
         codec (blosc2.Codec, optional): Compression codec. Defaults to blosc2.Codec.ZSTD.
         metadata (Optional[dict], optional): Optional dictionary of metadata to attach. Defaults to None.
     """
+
+    if patch_size is None:
+        _is_float = np.issubdtype(data.dtype.type, np.floating)
+        _is_2d = data.ndim == 2
+
+        # if _is_2d:
+        base_patch_size = (512 if _is_float else 1024) if _is_2d else (64 if _is_float else 96)
+        # else:
+        #    base_patch_size = 64 if _is_float else 96
+
+        patch_size = tuple([min(s, base_patch_size) for s in data.shape])
+
     blocks, chunks = comp_blosc2_params(data.shape, patch_size, data.itemsize)
     blosc2.set_nthreads(nthreads)
     blosc2.asarray(
@@ -48,6 +60,7 @@ def save_blosc2(
         mmap_mode="w+",
         meta=metadata,
     )
+    return [file]
 
 
 @register_loader("image", ".b2nd", backend="blosc2")
@@ -74,7 +87,7 @@ def load_blosc2(file: str, nthreads: int = 1) -> tuple[blosc2.NDArray, dict]:
 def save_blosc2pkl(
     data: np.ndarray,
     file: str,
-    patch_size: Union[tuple[int, int], tuple[int, int, int]],
+    patch_size: Union[tuple[int, int], tuple[int, int, int]] | None = None,
     clevel: int = 8,
     nthreads: int = 8,
     codec: blosc2.Codec = blosc2.Codec.ZSTD,
@@ -92,7 +105,9 @@ def save_blosc2pkl(
         metadata (Optional[dict], optional): Optional dictionary of metadata to attach. Defaults to None.
     """
     save_blosc2(data, file, patch_size=patch_size, clevel=clevel, nthreads=nthreads, codec=codec)
-    save_pickle(metadata, str(file).replace(".b2nd", ".pkl"))
+    file_pkl = str(file).replace(".b2nd", ".pkl")
+    save_pickle(metadata, file_pkl)
+    return [file, file_pkl]
 
 
 @register_loader("image", ".b2nd", backend="blosc2pkl")

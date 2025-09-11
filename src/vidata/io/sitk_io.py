@@ -7,7 +7,7 @@ from vidata.utils.affine import build_affine
 
 @register_writer("image", ".nii.gz", ".nii", ".mha", ".nrrd", backend="sitk")
 @register_writer("mask", ".nii.gz", ".nii", ".mha", ".nrrd", backend="sitk")
-def save_sitk(data, file, metadata: dict | None = None) -> None:
+def save_sitk(data: np.ndarray, file: str, metadata: dict | None = None) -> list[str]:
     """Save a NumPy array as a medical image file using SimpleITK.
 
     Args:
@@ -34,6 +34,7 @@ def save_sitk(data, file, metadata: dict | None = None) -> None:
             image_sitk.SetDirection(direction.flatten().tolist()[::-1])
 
     sitk.WriteImage(image_sitk, str(file), useCompression=True)
+    return [file]
 
 
 @register_loader("image", ".nii.gz", ".nii", ".mha", ".nrrd", backend="sitk")
