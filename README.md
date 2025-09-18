@@ -424,6 +424,7 @@ print(fm[0])                      # > data/stacked_images/case_1_image | gives t
 - Config is a YAML **template for datasets**: always starts with a `name`.
 - Add one or more **layers** (e.g., `image`, `semseg`, `multilabel`) with fields like `path`, `file_type`, `channels`/`classes`.
 - **Optional splits**: define `train/val/test` overrides or point to a `splits_file`.
+- See [`examples/template.yaml`](examples/template.yaml) and/or run `vidata_template` for a template
 
 <details>
 <summary> Expand for Full Details </summary>
@@ -537,7 +538,7 @@ print("Classes in labels:", tm.class_ids(arr))
 
 # Data Analysis
 
-The `data_analyze` CLI computes dataset statistics and writes them to the
+The `vidata_analyze` CLI computes dataset statistics and writes them to the
 specified output directory. Results include:
 
 - **Image statistics**: sizes, resolutions, intensity distributions
@@ -545,9 +546,9 @@ specified output directory. Results include:
 - **Split summaries**: optional per-split analysis
 
 ```bash
-data_analyze -c path/to/datasets/*.yaml  -o <outputdir>
+vidata_analyze -c path/to/datasets/*.yaml  -o <outputdir>
 # Analyze a specific split/fold
-data_analyze -c path/to/datasets/*.yaml  -o <outputdir> -s <split> -f <fold>
+vidata_analyze -c path/to/datasets/*.yaml  -o <outputdir> -s <split> -f <fold>
 ```
 
 # Data Inspection
@@ -562,9 +563,9 @@ pip install napari-data-inspection[all]
 Run the following
 
 ```bash
-data_inspections -c path/to/datasets/*.yaml
+data_inspection -c path/to/datasets/*.yaml
 # Inspect a specific split/fold
-data_inspections -c path/to/datasets/*.yaml  -s <split> -f <fold>
+data_inspection -c path/to/datasets/*.yaml  -s <split> -f <fold>
 ```
 
 # Acknowledgments

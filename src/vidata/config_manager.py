@@ -236,7 +236,7 @@ class LayerConfigManager:
             _cfg["include_names"] = self.resolve_splits_file(split, fold)
         return _cfg
 
-    def resolve_splits_file(self, split: str, fold: int | None = None):
+    def resolve_splits_file(self, split: str, fold: int | None = None) -> list[str]:
         if self.splits_file is None:
             raise ValueError(f"no splits file defined for {self.name}")
         splits = load_json(self.splits_file)
@@ -254,7 +254,10 @@ class LayerConfigManager:
 
         if split not in splits:
             raise ValueError(f"split {split} is not in splits_file with keys {list(splits.keys())}")
-        return splits[split]
+
+        resolved = splits[split]
+        assert isinstance(resolved, list)  # Should be a list of files
+        return resolved
 
     def file_manager(self, split: str | None = None, fold: int | None = None) -> FileManager:
         _cfg = self.config(split=split)
@@ -319,8 +322,8 @@ class LayerConfigManager:
 
 
 class ConfigManager:
-    def __init__(self, config: dict | DictConfig | str):
-        if isinstance(config, str):
+    def __init__(self, config: dict | DictConfig | str | Path):
+        if isinstance(config, (str | Path)):
             self.config = OmegaConf.load(config)
         else:
             self.config = config
@@ -353,24 +356,3 @@ class ConfigManager:
 
     def __len__(self):
         return len(self.layers)
-
-
-if __name__ == "__main__":
-
-    path = "../../../dataset_cfg/Cityscapes.yaml"
-    cfg = dict(OmegaConf.load(path))
-    print(cfg)
-    cm = ConfigManager(cfg)
-    for key in cm.layer_names():
-        layer = cm.layer(key)
-        fm = layer.file_manager()
-        for i in fm:
-            print(i)
-        break
-        # for layer in cm.layers:
-        # for split in ["train", "val"]:
-        #     fm=layer.file_manager(split,fold=0)
-        #     print(layer.name,split,len(fm))
-        #     dalo=layer.data_loader()
-        #     data,meta=dalo.load(fm[0])
-        #     print(layer.name, split, data.shape)

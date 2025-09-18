@@ -120,3 +120,8 @@ fix = true
 [tool.pytest.ini_options]
 addopts = "--basetemp=./tests/temp/"
 testpaths = ["tests"]
+
+
+[project.scripts]
+vidata_analyze = "vidata.cli.analyze:main"
+vidata_template = "vidata.cli.template:main"
