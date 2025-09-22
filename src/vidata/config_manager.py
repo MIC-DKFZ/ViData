@@ -50,7 +50,7 @@ _STACKED_WRITER_MAPPING: dict[str, type[BaseWriter]] = {
 
 
 class LayerConfigManager:
-    def __init__(self, layer_config, split_config=None, splits_file=None):
+    def __init__(self, layer_config, split_config=None, splits_file=None, strict: bool = True):
         self.layer_config = layer_config
         self.split_config = split_config if split_config is not None else {}
 
@@ -111,13 +111,13 @@ class LayerConfigManager:
                 f"Unknown layer type '{self.layer_config['type']}' for layer '{self.layer_config.get('name')}'"
             )
 
-        if errs != []:
+        if errs != [] and strict:
             for err in errs:
                 print(err)
             raise ValueError(f"Config for layer '{self.layer_config.get('name')}' is invalid")
 
         # Check if splits_file is valid
-        if splits_file is not None and not Path(splits_file).exists():
+        if splits_file is not None and not Path(splits_file).exists() and strict:
             raise FileNotFoundError(f"splits_file not found: {splits_file}")
         self.splits_file = splits_file
 
@@ -322,7 +322,7 @@ class LayerConfigManager:
 
 
 class ConfigManager:
-    def __init__(self, config: dict | DictConfig | str | Path):
+    def __init__(self, config: dict | DictConfig | str | Path, strict: bool = True):
         if isinstance(config, (str | Path)):
             self.config = OmegaConf.load(config)
         else:
@@ -337,7 +337,9 @@ class ConfigManager:
                 if split_cfg.get(k, {}) is not None and layer_cfg["name"] in split_cfg.get(k, {}):
                     ovrds = split_cfg[k][layer_cfg["name"]]
                     layer_split[k] = ovrds if ovrds is not None else {}
-            lcm = LayerConfigManager(layer_cfg, layer_split, split_cfg.get("splits_file"))
+            lcm = LayerConfigManager(
+                layer_cfg, layer_split, split_cfg.get("splits_file"), strict=strict
+            )
 
             self.layers.append(lcm)
 

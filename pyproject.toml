@@ -1,7 +1,7 @@
 [project]
 name = "vidata"
 dynamic = ["version"]
-description = "Data IO"
+description = "A unified Python toolkit for managing, processing, and analyzing vision datasets, from raw data to task specific analytics."
 readme = "README.md"
 license = {file = "LICENSE"}
 authors = [

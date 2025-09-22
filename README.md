@@ -1,8 +1,8 @@
 # ViData: Vision Data Management, Processing and Analysis
 
-> A unified Python toolkit for managing, processing, and analyzing vision datasets — from raw data to task specific analytics.
+> A unified Python toolkit for managing, processing, and analyzing vision datasets, from raw data to task specific analytics.
 >
-> streamlines the entire data pipeline for computer vision and medical imaging:
+> Streamlines the entire data pipeline for computer vision and medical imaging:
 >
 > - Load and save 2D/3D data across common formats with a consistent API.
 > - Organize datasets using flexible file managers and YAML-based configs.
@@ -52,6 +52,7 @@ pip install napari-data-inspection
 - Use `load_xxx` / `save_xxx` for all supported formats.
 - **Images/arrays:** PNG/JPG/TIFF (`imageio`, `tifffile`), NIfTI/NRRD/MHA (`sitk`, `nibabel`), Blosc2, NumPy (`.npy`, `.npz`).
 - **Configs/metadata:** JSON, YAML, Pickle, TXT.
+- **Extendable** by custom _load_ and _save_ functions.
 - Functions always follow the same pattern:
 
 ```python
@@ -151,6 +152,52 @@ save_pickle(obj, "out.pkl")
 # Plain text
 obj = load_txt("config.txt")
 save_txt(obj, "out.txt")
+```
+
+### Custom Load and Save Functions
+
+- Register a reader / writer with a decorator.
+- Reader must return (numpy_array, metadata_dict).
+- Writer must return list\[str\] of the file(s) it wrote.
+- Registration happens at import time—make sure this module is imported (e.g., from your package’s __init__.py).
+- See [here](https://github.com/MIC-DKFZ/ViData/blob/main/src/vidata/io/image_io.py) for an example.
+
+```py
+# custom_io_template.py  — fill in the TODOs and import this module somewhere at startup.
+import numpy as np
+from typing import Tuple, Dict, List
+
+# TODO: import your backend library (e.g., imageio, tifffile, nibabel, SimpleITK, ...)
+# import imageio.v3 as iio
+
+from vidata.registry import register_loader, register_writer
+
+# --------------------------- READER ------------------------------------------
+# Replace file extension and backend name to your custom function
+@register_loader("image", ".png", ".jpg", ".jpeg", ".bmp", backend="imageio")  # To Register Image Loading
+@register_loader("mask", ".png", ".bmp", backend="imageio") # To Register Label Loading
+def load_custom(file: str) -> tuple[np.ndarray, dict]:
+    """
+    Load a file and return (data, metadata).
+    metadata can be empty or include keys like: spacing, origin, direction, shear, dtype, etc.
+    """
+    # data = iio.imread(file)  # example for imageio
+    data = ...  # TODO: replace
+    meta = {}   # TODO: replace
+    return data, meta
+    # return meta # for metadata files like json or yaml
+
+# --------------------------- WRITER ------------------------------------------
+# Replace file extension and backend name to your custom function
+@register_writer("image", ".png", ".jpg", ".jpeg", ".bmp", backend="imageio") # To Register Image Writer
+@register_writer("mask", ".png", ".bmp", backend="imageio") # To Register Label Writer
+def save_custom(data: np.ndarray, file: str) -> list[str]:
+    """
+    Save array to `file`. Return all created paths (include sidecars if any).
+    """
+    # TODO: write using your backend
+    # iio.imwrite(file, data)
+    return [file]
 ```
 
 </details>
@@ -579,8 +626,7 @@ This repository is developed and maintained by the Applied Computer Vision Lab (
 of [Helmholtz Imaging](https://www.helmholtz-imaging.de/) and the
 [Division of Medical Image Computing](https://www.dkfz.de/en/medical-image-computing) at DKFZ.
 
-This [napari] plugin was generated with [copier] using the [napari-plugin-template].
+This repository was generated with [copier] using the [napari-plugin-template].
 
 [copier]: https://copier.readthedocs.io/en/stable/
-[napari]: https://github.com/napari/napari
 [napari-plugin-template]: https://github.com/napari/napari-plugin-template
