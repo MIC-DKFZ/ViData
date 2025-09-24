@@ -15,6 +15,8 @@ def run_analysis(
     output_dir: str | Path,
     split: str | None = None,
     fold: int | None = None,
+    p: int = 16,
+    verbose: bool = False,
 ):
     for layer in conf_manager.layers:
         name = layer.name
@@ -44,7 +46,7 @@ def run_analysis(
         analyzer.plot(output_dir, name=name)
 
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(description="Analyze your Data")
     parser.add_argument("-c", "--config", type=Path, required=True, help="Path to YAML config file")
     parser.add_argument("-o", "--output", type=Path, default=None, help="Path to output directory")
@@ -81,4 +83,8 @@ if __name__ == "__main__":
 
     conf_manager = ConfigManager(cfg)
 
-    run_analysis(conf_manager, output_dir, split, fold)
+    run_analysis(conf_manager, output_dir, split, fold, p, verbose)
+
+
+if __name__ == "__main__":
+    main()

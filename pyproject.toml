@@ -34,7 +34,9 @@ dependencies = [
     "kaleido", # for plotly
     "natsort",
     "omegaconf",
-    "pyyaml"
+    "pyyaml",
+    "seaborn",
+    "scikit-learn",
 ]
 
 [project.optional-dependencies]
