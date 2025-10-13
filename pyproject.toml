@@ -25,7 +25,7 @@ classifiers = [
 requires-python = ">=3.10"
 dependencies = [
     "numpy",
-    "blosc2==3.0.0b4",
+    "blosc2",  # "blosc2==3.0.0b4",
     "SimpleITK",
     "nibabel",
     "imageio",

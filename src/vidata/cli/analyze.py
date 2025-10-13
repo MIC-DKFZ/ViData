@@ -17,9 +17,15 @@ def run_analysis(
     fold: int | None = None,
     p: int = 16,
     verbose: bool = False,
+    layer_name: str | None = None,
 ):
     for layer in conf_manager.layers:
         name = layer.name
+
+        if layer_name is not None and name != str(layer_name):
+            print(f"Skipping Layer {name}")
+            continue
+
         if split is not None:
             name += f"_{split}"
         if fold is not None:
@@ -49,6 +55,7 @@ def run_analysis(
 def main():
     parser = argparse.ArgumentParser(description="Analyze your Data")
     parser.add_argument("-c", "--config", type=Path, required=True, help="Path to YAML config file")
+    parser.add_argument("-l", "--layer", type=Path, default=None, help="Use a specific layer")
     parser.add_argument("-o", "--output", type=Path, default=None, help="Path to output directory")
     parser.add_argument(
         "-p", "--processes", type=int, default=16, help="Number of worker processes"
@@ -71,6 +78,7 @@ def main():
     verbose = args.verbose
     split = args.split
     fold = args.fold
+    layer_name = args.layer
 
     cfg = OmegaConf.load(config_file)
 
@@ -83,7 +91,7 @@ def main():
 
     conf_manager = ConfigManager(cfg)
 
-    run_analysis(conf_manager, output_dir, split, fold, p, verbose)
+    run_analysis(conf_manager, output_dir, split, fold, p, verbose, layer_name)
 
 
 if __name__ == "__main__":
