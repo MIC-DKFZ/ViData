@@ -1,9 +1,10 @@
+from pathlib import Path
 from typing import Any
 
 import yaml  # type: ignore
 
 
-def load_yaml(path: str) -> Any:
+def load_yaml(path: str | Path) -> Any:
     """Load a YAML file and return the data as a Python object.
 
     Args:
@@ -16,7 +17,7 @@ def load_yaml(path: str) -> Any:
         return yaml.safe_load(f)
 
 
-def save_yaml(data: Any, path: str, sort_keys: bool = False) -> None:
+def save_yaml(data: Any, path: str | Path, sort_keys: bool = False) -> None:
     """Save a Python object to a YAML file.
 
     Args:

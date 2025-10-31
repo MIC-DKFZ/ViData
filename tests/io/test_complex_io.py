@@ -122,6 +122,58 @@ def test_nib(dtype, file_ending, size, metadata, tmp_path):
 
 
 @pytest.mark.parametrize("dtype", ["float", "int"])
+@pytest.mark.parametrize("file_ending", [".nii.gz", ".nii"])
+@pytest.mark.parametrize(
+    "size, metadata",
+    [
+        (
+            (110, 90, 100),
+            {
+                "spacing": [1, 0.5, 0.25],
+                "origin": [10, 20, 30],
+                "direction": [
+                    [1.0, 0.0, 0.0],
+                    [0.0, -1.0, 0.0],
+                    [0.0, 0.0, -1.0],
+                ],
+            },
+        ),
+        (
+            (110, 90, 100),
+            {
+                "spacing": np.array([1, 0.5, 0.25]),
+                "origin": np.array([10, 20, 30]),
+                "direction": np.array([[1.0, 0.0, 0.0], [0.0, -1.0, 0.0], [0.0, 0.0, -1.0]]),
+            },
+        ),
+        (
+            (120, 100, 80),
+            {
+                "spacing": [1, 0.5, 0.25],
+                "direction": np.array([[1.0, 0.0, 0.0], [0.0, -1.0, 0.0], [0.0, 0.0, -1.0]]),
+            },
+        ),
+    ],
+)
+def test_nibRO(dtype, file_ending, size, metadata, tmp_path):
+    from vidata.io import load_nibRO, save_nibRO
+
+    file = Path(tmp_path).joinpath(f"sitk_{dtype}{file_ending}")
+
+    data = dummy_data(size, dtype)
+
+    save_nibRO(data, file, metadata)
+    data_l, metadata_l = load_nibRO(file)
+    print("D1", data)
+    print("D2", data_l)
+    print(metadata_l)
+    assert np.array_equal(data, data_l)
+    if metadata is not None:
+        for key in metadata:
+            assert np.all(metadata_l[key] == metadata[key])
+
+
+@pytest.mark.parametrize("dtype", ["float", "int"])
 @pytest.mark.parametrize(
     "size, metadata",
     [

@@ -69,3 +69,7 @@ class BaseWriter:
             Backend-dependent return value (usually ``None``).
         """
         return self.save_file(data, file, *args, **kwargs)
+
+    def __call__(self, data: Any, file: PathLike, *args, **kwargs) -> Any:
+        """Allow the writer instance to be called like a function."""
+        return self.save(data, file, *args, **kwargs)

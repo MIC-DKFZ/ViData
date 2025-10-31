@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import numpy as np
 
 from vidata.registry import register_loader, register_writer
@@ -5,7 +7,7 @@ from vidata.registry import register_loader, register_writer
 
 @register_loader("image", ".npy", backend="numpy")
 @register_loader("mask", ".npy", backend="numpy")
-def load_npy(file: str) -> np.ndarray:
+def load_npy(file: str | Path) -> np.ndarray:
     """Load a NumPy array from a .npy file.
 
     Args:
@@ -19,7 +21,7 @@ def load_npy(file: str) -> np.ndarray:
 
 @register_writer("image", ".npy", backend="numpy")
 @register_writer("mask", ".npy", backend="numpy")
-def save_npy(array: np.ndarray, file: str, *args, **kwargs) -> list[str]:
+def save_npy(array: np.ndarray, file: str | Path, *args, **kwargs) -> list[str]:
     """Save a NumPy array to a .npy file.
 
     Args:
@@ -27,12 +29,12 @@ def save_npy(array: np.ndarray, file: str, *args, **kwargs) -> list[str]:
         file (str): Output file file.
     """
     np.save(file, array)
-    return [file]
+    return [str(file)]
 
 
 @register_loader("image", ".npz", backend="numpy")
 @register_loader("mask", ".npz", backend="numpy")
-def load_npz(file: str) -> tuple[dict[str, np.ndarray], dict]:
+def load_npz(file: str | Path) -> tuple[dict[str, np.ndarray], dict]:
     """Load multiple arrays from a .npz file into a dictionary.
 
     Args:
@@ -48,7 +50,7 @@ def load_npz(file: str) -> tuple[dict[str, np.ndarray], dict]:
 @register_writer("image", ".npz", backend="numpy")
 @register_writer("mask", ".npz", backend="numpy")
 def save_npz(
-    data_dict: dict[str, np.ndarray], file: str, compress: bool = True, *args, **kwargs
+    data_dict: dict[str, np.ndarray], file: str | Path, compress: bool = True, *args, **kwargs
 ) -> list[str]:
     """Save multiple NumPy arrays to a .npz file.
 
@@ -67,4 +69,4 @@ def save_npz(
             np.savez(file, **data_dict)
         else:
             np.savez(file, data_dict)
-    return [file]
+    return [str(file)]

@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import numpy as np
 import SimpleITK as sitk
 
@@ -7,7 +9,7 @@ from vidata.utils.affine import build_affine
 
 @register_writer("image", ".nii.gz", ".nii", ".mha", ".nrrd", backend="sitk")
 @register_writer("mask", ".nii.gz", ".nii", ".mha", ".nrrd", backend="sitk")
-def save_sitk(data: np.ndarray, file: str, metadata: dict | None = None) -> list[str]:
+def save_sitk(data: np.ndarray, file: str | Path, metadata: dict | None = None) -> list[str]:
     """Save a NumPy array as a medical image file using SimpleITK.
 
     Args:
@@ -34,12 +36,12 @@ def save_sitk(data: np.ndarray, file: str, metadata: dict | None = None) -> list
             image_sitk.SetDirection(direction.flatten().tolist()[::-1])
 
     sitk.WriteImage(image_sitk, str(file), useCompression=True)
-    return [file]
+    return [str(file)]
 
 
 @register_loader("image", ".nii.gz", ".nii", ".mha", ".nrrd", backend="sitk")
 @register_loader("mask", ".nii.gz", ".nii", ".mha", ".nrrd", backend="sitk")
-def load_sitk(file: str) -> tuple[np.ndarray, dict]:
+def load_sitk(file: str | Path) -> tuple[np.ndarray, dict]:
     """Load a medical image file using SimpleITK and return data and metadata.
 
     Args:

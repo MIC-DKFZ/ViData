@@ -1,5 +1,6 @@
 # Local dev/testing scripts and folders
 playground.py
+metric.py
 stats/
 dataset_cfg/
 tests/temp/

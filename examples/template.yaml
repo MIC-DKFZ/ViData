@@ -2,7 +2,7 @@ name: DatasetName
 
 # Define an arbitrary number of layers
 layers:
-  - name: SomeImages # unique layer name
+  SomeImages: # unique layer name
     type: image # 'image' for image data and for label data one of: 'semseg' | 'multilabel'
     path: some/path/to/data # directory
     file_type: .png # required extension incl. dot (e.g., .png | .nii.gz | .b2nd)
@@ -11,7 +11,7 @@ layers:
     channels: 3 # number of channels, required for image
     file_stack: False # True if each channel is a separate file: *_0000, *_0001, ...
 
-  - name: SomeLabels
+  SomeLabels:
     type: semseg # semseg --> Semantic Segmentation | multilabel --> Multilabel Segmentation
     path: some/path/to/data
     file_type: .png|.nii.gz|.b2nd|...

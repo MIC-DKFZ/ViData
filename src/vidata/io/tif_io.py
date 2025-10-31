@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import numpy as np
 import tifffile
 
@@ -6,7 +8,7 @@ from vidata.registry import register_loader, register_writer
 
 @register_loader("image", ".tif", ".tiff", backend="tifffile")
 @register_loader("mask", ".tif", ".tiff", backend="tifffile")
-def load_tif(path: str) -> np.ndarray:
+def load_tif(path: str | Path) -> np.ndarray:
     """Load a TIFF (.tif) file into a NumPy array.
 
     Args:
@@ -22,7 +24,7 @@ def load_tif(path: str) -> np.ndarray:
 @register_writer("mask", ".tif", ".tiff", backend="tifffile")
 def save_tif(
     data: np.ndarray,
-    file: str,
+    file: str | Path,
     tile_size: int = 256,
     compression: str = "zlib",
 ) -> list[str]:
@@ -39,4 +41,4 @@ def save_tif(
         "compression": compression,
     }
     tifffile.imwrite(file, data, **options)
-    return [file]
+    return [str(file)]

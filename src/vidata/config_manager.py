@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import DictConfig, ListConfig, OmegaConf
 
 from vidata.file_manager import FileManager, FileManagerStacked
 from vidata.io import load_json
@@ -330,7 +330,20 @@ class ConfigManager:
         self.layers = []
 
         split_cfg = self.config.get("splits", {})
-        for layer_cfg in self.config.get("layers", []):
+
+        layers_cfg = self.config.get("layers", [])
+        if isinstance(layers_cfg, (dict | DictConfig)):
+            layer_list = []
+            for layer_name, layer_cfg in layers_cfg.items():
+                layer_cfg = dict(layer_cfg)
+                layer_cfg["name"] = layer_name
+                layer_list.append(layer_cfg)
+        elif isinstance(layers_cfg, (list | ListConfig)):
+            layer_list = layers_cfg
+        else:
+            raise ValueError(f"Invalid type for layers: {type(layers_cfg)}. Must be dict or list.")
+
+        for layer_cfg in layer_list:
             layer_split = {}
 
             for k in _VALID_SPLITS:
@@ -358,3 +371,6 @@ class ConfigManager:
 
     def __len__(self):
         return len(self.layers)
+
+    def __getitem__(self, layer_name: str) -> LayerConfigManager:
+        return self.layer(layer_name)

@@ -61,3 +61,7 @@ class BaseLoader:
             tuple[Any, dict]: The loaded file data and metadata as dict.
         """
         return self.load_file(file)
+
+    def __call__(self, file: str) -> tuple[Any, dict[str, Any]]:
+        """Allow the loader instance to be called like a function."""
+        return self.load(file)

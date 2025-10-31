@@ -1,8 +1,9 @@
 import pickle  # nosec B403: pickle import is intentional; only used for trusted inputs.
+from pathlib import Path
 from typing import Any
 
 
-def load_pickle(path: str) -> Any:
+def load_pickle(path: str | Path) -> Any:
     """Load a Python object from a pickle file.
 
     Args:
@@ -15,7 +16,7 @@ def load_pickle(path: str) -> Any:
         return pickle.load(f)
 
 
-def save_pickle(data: Any, path: str, protocol: int = pickle.HIGHEST_PROTOCOL) -> None:
+def save_pickle(data: Any, path: str | Path, protocol: int = pickle.HIGHEST_PROTOCOL) -> None:
     """Save a Python object to a pickle file.
 
     Args:

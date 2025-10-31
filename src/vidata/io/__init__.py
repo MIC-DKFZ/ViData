@@ -1,8 +1,8 @@
-# isort: skip_file
+# isort: skip_file # order matters, first ones in list are the defaults
 # ruff: noqa: I001, I002  # disable Ruff's import-sorting checks for this file
 from .image_io import load_image, save_image
 from .sitk_io import load_sitk, save_sitk
-from .nib_io import load_nib, save_nib
+from .nib_io import load_nib, save_nib, load_nibRO, save_nibRO
 from .tif_io import load_tif, save_tif
 from .blosc2_io import load_blosc2, load_blosc2pkl, save_blosc2, save_blosc2pkl
 from .numpy_io import load_npy, load_npz, save_npy, save_npz
@@ -16,6 +16,8 @@ __all__ = [
     "save_sitk",
     "load_nib",
     "save_nib",
+    "load_nibRO",
+    "save_nibRO",
     "load_blosc2",
     "save_blosc2",
     "load_blosc2pkl",

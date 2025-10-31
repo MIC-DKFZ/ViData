@@ -1,8 +1,9 @@
 import json
+from pathlib import Path
 from typing import Any
 
 
-def load_json(json_file: str) -> Any:
+def load_json(json_file: str | Path) -> Any:
     """Load data from a JSON file.
 
     Args:
@@ -16,7 +17,7 @@ def load_json(json_file: str) -> Any:
     return data
 
 
-def save_json(data: Any, json_file: str, indent: int = 4) -> None:
+def save_json(data: Any, json_file: str | Path, indent: int = 4) -> None:
     """Write data to a JSON file.
 
     Args:

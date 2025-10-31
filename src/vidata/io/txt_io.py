@@ -1,4 +1,7 @@
-def load_txt(txt_file: str) -> list[str]:
+from pathlib import Path
+
+
+def load_txt(txt_file: str | Path) -> list[str]:
     """Load lines from a text file.
 
     Args:
@@ -13,7 +16,7 @@ def load_txt(txt_file: str) -> list[str]:
 
 
 def save_txt(
-    lines: list[str], txt_file: str, append: bool = False, newline: str | None = "\n"
+    lines: list[str], txt_file: str | Path, append: bool = False, newline: str | None = "\n"
 ) -> None:
     """Write lines to a text file.
 

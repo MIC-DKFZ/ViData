@@ -6,6 +6,7 @@ https://gist.github.com/Karol-G/68bc6cf6cbe4f1a21993a988533be0b3
 
 import math
 from copy import deepcopy
+from pathlib import Path
 from typing import Union
 
 import blosc2
@@ -19,7 +20,7 @@ from vidata.registry import register_loader, register_writer
 @register_writer("mask", ".b2nd", backend="blosc2")
 def save_blosc2(
     data: np.ndarray,
-    file: str,
+    file: str | Path,
     patch_size: Union[tuple[int, int], tuple[int, int, int]] | None = None,
     clevel: int = 8,
     nthreads: int = 8,
@@ -42,11 +43,7 @@ def save_blosc2(
         _is_float = np.issubdtype(data.dtype.type, np.floating)
         _is_2d = data.ndim == 2
 
-        # if _is_2d:
         base_patch_size = (512 if _is_float else 1024) if _is_2d else (64 if _is_float else 96)
-        # else:
-        #    base_patch_size = 64 if _is_float else 96
-
         patch_size = tuple([min(s, base_patch_size) for s in data.shape])
 
     blocks, chunks = comp_blosc2_params(data.shape, patch_size, data.itemsize)
@@ -60,12 +57,12 @@ def save_blosc2(
         mmap_mode="w+",
         meta=metadata,
     )
-    return [file]
+    return [str(file)]
 
 
 @register_loader("image", ".b2nd", backend="blosc2")
 @register_loader("mask", ".b2nd", backend="blosc2")
-def load_blosc2(file: str, nthreads: int = 1) -> tuple[blosc2.NDArray, dict]:
+def load_blosc2(file: str | Path, nthreads: int = 1) -> tuple[blosc2.NDArray, dict]:
     """Reads a Blosc2 file and returns the data and metadata.
 
     Args:
@@ -86,7 +83,7 @@ def load_blosc2(file: str, nthreads: int = 1) -> tuple[blosc2.NDArray, dict]:
 @register_writer("mask", ".b2nd", backend="blosc2pkl")
 def save_blosc2pkl(
     data: np.ndarray,
-    file: str,
+    file: str | Path,
     patch_size: Union[tuple[int, int], tuple[int, int, int]] | None = None,
     clevel: int = 8,
     nthreads: int = 8,
@@ -112,7 +109,7 @@ def save_blosc2pkl(
 
 @register_loader("image", ".b2nd", backend="blosc2pkl")
 @register_loader("mask", ".b2nd", backend="blosc2pkl")
-def load_blosc2pkl(file: str, nthreads: int = 1) -> tuple[blosc2.NDArray, dict]:
+def load_blosc2pkl(file: str | Path, nthreads: int = 1) -> tuple[blosc2.NDArray, dict]:
     """Reads a Blosc2 file and returns the data and metadata.
 
     Args:

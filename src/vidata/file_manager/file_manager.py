@@ -23,6 +23,8 @@ class FileManager:
         Keep files whose RELATIVE path contains ANY of these substrings.
     exclude_names: list[str] | None
         Drop files whose RELATIVE path contains ANY of these substrings. (Exclude wins.)
+    recursive: bool
+        Whether to recursively search subdirectories.
     """
 
     def __init__(
@@ -32,12 +34,14 @@ class FileManager:
         pattern: str | None = None,
         include_names: list[str] | None = None,
         exclude_names: list[str] | None = None,
+        recursive: bool = False,
     ):
         self.path = path
         self.file_type = file_type
         self.pattern = pattern
         self.include_names = include_names
         self.exclude_names = exclude_names
+        self.recursive = recursive
         self.collect_files()
         self.filter_files()
 
@@ -69,16 +73,30 @@ class FileManager:
             pattern = "*" + self.pattern
         else:
             pattern = self.pattern
-        files = list(Path(self.path).glob(pattern + self.file_type))
+
+        if self.recursive:
+            files = list(Path(self.path).rglob(pattern + self.file_type))
+        else:
+            files = list(Path(self.path).glob(pattern + self.file_type))
         self.files = natsorted(files, key=lambda p: p.name)
 
     def get_name(self, file: str | int, with_file_type=True) -> str:
+        """Just keep this for backwards compatibility"""
+        return self.name_from_path(file, with_file_type)
+
+    def name_from_path(self, file: str | int, include_ext: bool = True) -> str:
         if isinstance(file, int):
             file = str(self.files[file])
         name = str(Path(file).relative_to(self.path))
-        if not with_file_type:
+        if not include_ext:
             name = name.replace(self.file_type, "")
         return name
+
+    def path_from_name(self, name: str | Path, include_ext=True):
+        rel = Path(name)
+        if include_ext and rel.suffix != self.file_type:
+            rel = rel.with_suffix(self.file_type)
+        return (self.path / rel).resolve()
 
     def __getitem__(self, item: int):
         return self.files[item]
