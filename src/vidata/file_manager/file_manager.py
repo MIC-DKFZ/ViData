@@ -253,10 +253,15 @@ class FileManagerStacked(FileManager):
     ...
     """
 
-    def collect_files(self):
-        super().collect_files()
-        if self.files != []:
-            files = [file.with_name(file.stem.rsplit("_", 1)[0]) for file in self.files]
+    @staticmethod
+    def collect_files(
+        path: Path, file_type: str, pattern: str | None, recursive: bool = False
+    ) -> list[Path]:
+        # def collect_files(self):
+        files = FileManager.collect_files(path, file_type, pattern, recursive)
+        if files != []:
+            files = [file.with_name(file.stem.rsplit("_", 1)[0]) for file in files]
             files = np.unique(files)
 
-            self.files = natsorted(files, key=lambda p: p.name)
+            files = natsorted(files, key=lambda p: p.name)
+        return files
