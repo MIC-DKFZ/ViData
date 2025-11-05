@@ -1,4 +1,4 @@
-__version__ = "1.0.2"
+__version__ = "1.0.3"
 
 # Registry imports
 from .config_manager import ConfigManager, LayerConfigManager
