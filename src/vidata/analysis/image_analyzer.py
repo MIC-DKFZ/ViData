@@ -44,8 +44,8 @@ class ImageAnalyzer(Analyzer):
         self.stats = None
         self.global_stats = None
 
-    def analyze_case(self, index, verbose=False):
-        file = self.file_manager[index]
+    def analyze_case(self, file, verbose=False):
+        # file = self.file_manager[index]
         data, meta = self.data_loader.load(file)
         data = data[...]  # To resolve memmap dtypes
         stats = {
@@ -79,7 +79,7 @@ class ImageAnalyzer(Analyzer):
     def run(self, n_processes=8, progressbar=True, verbose=False):
         stats = multiprocess_iter(
             self.analyze_case,
-            iterables={"index": np.arange(0, len(self.file_manager))},
+            iterables={"file": self.file_manager},
             const={"verbose": verbose},
             p=n_processes,
             progressbar=progressbar,

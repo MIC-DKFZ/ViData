@@ -37,6 +37,7 @@ dependencies = [
     "pyyaml",
     "seaborn",
     "scikit-learn",
+    "opencv-python-headless"
 ]
 
 [project.optional-dependencies]

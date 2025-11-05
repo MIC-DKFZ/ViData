@@ -31,8 +31,8 @@ class LabelAnalyzer(Analyzer):
         self.n_classes = n_classes
         self.ignore_bg = ignore_bg
 
-    def analyze_case(self, index, verbose=False):
-        file = self.file_manager[index]
+    def analyze_case(self, file, verbose=False):
+        # file = self.file_manager[index]
         data, meta = self.data_loader.load(file)
         data = data[...]  # To resolve memmap dtypes
         data = data.astype(np.uint8)
@@ -58,7 +58,7 @@ class LabelAnalyzer(Analyzer):
     def run(self, n_processes=8, progressbar=True, verbose=False):
         stats = multiprocess_iter(
             self.analyze_case,
-            iterables={"index": np.arange(0, len(self.file_manager))},
+            iterables={"file": self.file_manager},
             const={"verbose": verbose},
             p=n_processes,
             progressbar=progressbar,
@@ -173,13 +173,15 @@ class LabelAnalyzer(Analyzer):
         # --- Size - Frequency Plot --- #
         colors = get_colormap("tab10", len(class_cnt), as_uint=True)
         fig = go.Figure()
-        for cnt, size, name, col in zip(class_cnt, class_size, categories, colors, strict=False):
+        for cnt, size, legend_name, col in zip(
+            class_cnt, class_size, categories, colors, strict=False
+        ):
             fig.add_trace(
                 go.Scatter(
                     x=[cnt],
                     y=[size],
                     mode="markers",
-                    name=name,  # ← legend label
+                    name=legend_name,  # ← legend label
                     marker={
                         "size": 15,
                         "color": f"rgb{col}",
