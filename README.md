@@ -24,17 +24,18 @@ from vidata.file_manager import FileManager
 from vidata import ConfigManager
 
 # --- Raw IO (direct file access) ---
-data, meta = load_image("file_in.png")
-save_image(data, "file_out.png", meta)
-data, meta = load_sitk("file_in.nii.gz")
-save_sitk(data, "file_out.nii.gz", meta)
+data, meta = load_image("file_in.png")      # Load a 2D image
+save_image(data, "file_out.png", meta)      # Save a 2D image
+data, meta = load_sitk("file_in.nii.gz")    # Load a 3D volume
+save_sitk(data, "file_out.nii.gz", meta)    # Save a 3D volume
+# Supports PNG, TIFF, NIfTI, NRRD, MHA, NumPy, Blosc2, JSON, YAML, Pickle, and more
 
 # --- Manage, load, and save image data ---
-img_fm = FileManager(path=".../images", file_type=".png")  # also works with .tif, .nii.gz, .b2nd, ..
-img_lo = ImageLoader(ftype=".png")
-img_wr = ImageWriter(ftype=".png")
-data, meta = img_lo.load(img_fm[0])
-img_wr.save(data, ".../out/file.png", meta)
+img_fm = FileManager(path=".../images", file_type=".png") # Collect files (.png, .tif, .nii.gz, .b2nd, ...)
+img_lo = ImageLoader(ftype=".png")                        # Define how to load data
+img_wr = ImageWriter(ftype=".png")                        # Define how to save data
+data, meta = img_lo.load(img_fm[0])                       # Load a collected file
+img_wr.save(data, ".../out/file.png", meta)               # Save the processed data
 
 # --- Manage, load, and save label data (semantic or multilabel) ---
 lbl_fm = FileManager(path=".../labels", file_type=".nii.gz")
@@ -44,9 +45,9 @@ data, meta = lbl_lo.load(lbl_fm[0])
 lbl_wr.save(data, ".../out/file.nii.gz", meta)
 
 # --- Build everything from a YAML config ---
-cm = ConfigManager("path/to/my/dataset.yaml")
-img_layer = cm["MyImageLayer"]
-lbl_layer = cm["MyLabelLayer"]
+cm = ConfigManager("path/to/my/dataset.yaml")    # Parse dataset config
+img_layer = cm["MyImageLayer"]                   # Access image layer by user-defined layer name
+lbl_layer = cm["MyLabelLayer"]                   # Access label layer by user-defined layer name
 
 img_fm, img_lo, img_wr = img_layer.file_manager(), img_layer.data_loader(), img_layer.data_writer()
 lbl_fm, lbl_lo, lbl_wr = lbl_layer.file_manager(), lbl_layer.data_loader(), lbl_layer.data_writer()
