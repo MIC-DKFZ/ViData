@@ -16,7 +16,7 @@
 
 > From raw files to full dataset pipelines — in just a few lines.
 
-```python
+```py
 from vidata.io import load_image, save_image, load_sitk, save_sitk
 from vidata.loaders import ImageLoader, SemSegLoader, MultilabelLoader
 from vidata.writers import ImageWriter, SemSegWriter, MultilabelWriter
@@ -30,9 +30,7 @@ data, meta = load_sitk("file_in.nii.gz")
 save_sitk(data, "file_out.nii.gz", meta)
 
 # --- Manage, load, and save image data ---
-img_fm = FileManager(
-    path=".../images", file_type=".png"
-)  # also works with .tif, .nii.gz, .b2nd, ..
+img_fm = FileManager(path=".../images", file_type=".png")  # also works with .tif, .nii.gz, .b2nd, ..
 img_lo = ImageLoader(ftype=".png")
 img_wr = ImageWriter(ftype=".png")
 data, meta = img_lo.load(img_fm[0])
@@ -40,12 +38,8 @@ img_wr.save(data, ".../out/file.png", meta)
 
 # --- Manage, load, and save label data (semantic or multilabel) ---
 lbl_fm = FileManager(path=".../labels", file_type=".nii.gz")
-lbl_lo = SemSegLoader(
-    ftype=".nii.gz", backend="nibabel"
-)  # or: MultilabelLoader(".nii.gz")
-lbl_wr = SemSegWriter(
-    ftype=".nii.gz", backend="sitk"
-)  # or: MultilabelWriter(ftype=".nii.gz")
+lbl_lo = SemSegLoader( ftype=".nii.gz", backend="nibabel")  # or: MultilabelLoader(".nii.gz")
+lbl_wr = SemSegWriter( ftype=".nii.gz", backend="sitk")     # or: MultilabelWriter(ftype=".nii.gz")
 data, meta = lbl_lo.load(lbl_fm[0])
 lbl_wr.save(data, ".../out/file.nii.gz", meta)
 
@@ -54,16 +48,8 @@ cm = ConfigManager("path/to/my/dataset.yaml")
 img_layer = cm["MyImageLayer"]
 lbl_layer = cm["MyLabelLayer"]
 
-img_fm, img_lo, img_wr = (
-    img_layer.file_manager(),
-    img_layer.data_loader(),
-    img_layer.data_writer(),
-)
-lbl_fm, lbl_lo, lbl_wr = (
-    lbl_layer.file_manager(),
-    lbl_layer.data_loader(),
-    lbl_layer.data_writer(),
-)
+img_fm, img_lo, img_wr = img_layer.file_manager(), img_layer.data_loader(), img_layer.data_writer()
+lbl_fm, lbl_lo, lbl_wr = lbl_layer.file_manager(), lbl_layer.data_loader(), lbl_layer.data_writer()
 ```
 
 # Installation
