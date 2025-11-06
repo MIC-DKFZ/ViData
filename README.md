@@ -1,13 +1,70 @@
-# ViData: Vision Data Management, Processing and Analysis
+# ViData: A Unified Toolkit for 2D & 3D Vision Data I/O, Management, and Processing
 
-> A unified Python toolkit for managing, processing, and analyzing vision datasets, from raw data to task specific analytics.
+> A unified Python toolkit for managing, processing, and analyzing 2D and 3D vision data —
+> from raw files to task-aware analytics.
+> Designed to streamline computer vision and medical imaging workflows and data pipelines.
 >
-> Streamlines the entire data pipeline for computer vision and medical imaging:
->
-> - Load and save 2D/3D data across common formats with a consistent API.
-> - Organize datasets using flexible file managers and YAML-based configs.
-> - Handle task-aware data (images, semantic masks, multilabel masks) with clear shape and axis conventions.
-> - Analyze dataset statistics and inspect data interactively with CLI tools and Napari integration.
+> - **Unified I/O:** Load and save 2D images, 3D volumes, n-dim arrays, and configs with consistent `load_xxx` / `save_xxx` API.
+> - **Supported Formats:** PNG, JPG, TIFF, BMP, NIfTI, NRRD, MHA, NumPy, Blosc2, JSON, YAML, Pickle, Text.
+> - **Loaders & Writers:** Task-aware data handling for images, semantic segmentation, and multilabel masks (single-file or stacked).
+> - **File Management:** Collect files with patterns, filters, and split definitions.
+> - **Task-Aware Handling:** Built-in support for semantic and multilabel segmentation masks with clear shape and axis conventions.
+> - **Flexible Dataset Configs:** Define datasets in YAML with layers, modalities, labels, and optional splits/folds.
+> - **Analysis & Inspection Tools:** CLI for dataset statistics and a Napari plugin for visual inspection.
+
+# Quick Start
+
+> From raw files to full dataset pipelines — in just a few lines.
+
+```python
+from vidata.io import load_image, save_image, load_sitk, save_sitk
+from vidata.loaders import ImageLoader, SemSegLoader, MultilabelLoader
+from vidata.writers import ImageWriter, SemSegWriter, MultilabelWriter
+from vidata.file_manager import FileManager
+from vidata import ConfigManager
+
+# --- Raw IO (direct file access) ---
+data, meta = load_image("file_in.png")
+save_image(data, "file_out.png", meta)
+data, meta = load_sitk("file_in.nii.gz")
+save_sitk(data, "file_out.nii.gz", meta)
+
+# --- Manage, load, and save image data ---
+img_fm = FileManager(
+    path=".../images", file_type=".png"
+)  # also works with .tif, .nii.gz, .b2nd, ..
+img_lo = ImageLoader(ftype=".png")
+img_wr = ImageWriter(ftype=".png")
+data, meta = img_lo.load(img_fm[0])
+img_wr.save(data, ".../out/file.png", meta)
+
+# --- Manage, load, and save label data (semantic or multilabel) ---
+lbl_fm = FileManager(path=".../labels", file_type=".nii.gz")
+lbl_lo = SemSegLoader(
+    ftype=".nii.gz", backend="nibabel"
+)  # or: MultilabelLoader(".nii.gz")
+lbl_wr = SemSegWriter(
+    ftype=".nii.gz", backend="sitk"
+)  # or: MultilabelWriter(ftype=".nii.gz")
+data, meta = lbl_lo.load(lbl_fm[0])
+lbl_wr.save(data, ".../out/file.nii.gz", meta)
+
+# --- Build everything from a YAML config ---
+cm = ConfigManager("path/to/my/dataset.yaml")
+img_layer = cm["MyImageLayer"]
+lbl_layer = cm["MyLabelLayer"]
+
+img_fm, img_lo, img_wr = (
+    img_layer.file_manager(),
+    img_layer.data_loader(),
+    img_layer.data_writer(),
+)
+lbl_fm, lbl_lo, lbl_wr = (
+    lbl_layer.file_manager(),
+    lbl_layer.data_loader(),
+    lbl_layer.data_writer(),
+)
+```
 
 # Installation
 
@@ -21,16 +78,6 @@ pip install -e ./
 # (optional - for visual inspections)
 pip install napari-data-inspection
 ```
-
-# Features
-
-- **Unified I/O**: Load and save 2D images, 3D volumes, n-dim arrays, and configs with consistent `load_xxx` / `save_xxx` API.
-- **Supported Formats**: PNG, TIFF, NIfTI, NRRD, NumPy, Blosc2, JSON, YAML, Pickle, Text
-- **Loaders & Writers**: Task-aware data handling for images, semantic segmentation, and multilabel masks (single-file or stacked).
-- **File Management**: Collect files with patterns, filters, and split definitions.
-- **Task-Aware Handling**: Built-in support for semantic and multilabel segmentation masks with shape and axis conventions.
-- **Flexible Dataset Configs**: Define datasets in YAML with layers, modalities, labels, and optional splits/folds.
-- **Analysis & Inspection Tools**: CLI for dataset statistics and a Napari plugin for visual inspection.
 
 # Module Overview
 
@@ -65,20 +112,24 @@ save_xxx(data, "out.ext", meta)
 
 ### Imaging and Array Data
 
-| Module      | Extension(s)                       | Backend(s)  | Notes                                                                 |
-| ----------- | ---------------------------------- | ----------- | --------------------------------------------------------------------- |
-| `image_io`  | `.png`, `.jpg`, `.jpeg`, `.bmp`    | `imageio`   | Standard 2D image formats                                             |
-| `tif_io`    | `.tif`, `.tiff`                    | `tifffile`  | Multipage TIFF, high bit-depths supported                             |
-| `sitk_io`   | `.nii.gz`, `.nii`, `.mha`, `.nrrd` | `sitk`      | Medical image formats (3D volumes)                                    |
-| `nib_io`    | `.nii.gz`, `.nii`,                 | `nibabel`   | Alternative medical imaging backend                                   |
-| `blosc2_io` | `.b2nd`                            | `blosc2`,   | Compressed N-dimensional arrays.                                      |
-| `blosc2_io` | `.b2nd`                            | `blosc2pkl` | Compressed N-dimensional arrays with metadata in a separate pkl file. |
-| `numpy_io`  | `.npy`                             | `numpy`     | Single NumPy array                                                    |
-| `numpy_io`  | `.npz`                             | `numpy`     | Dictionary of arrays                                                  |
+| Module      | Extension(s)                       | Backend(s)             | Notes                                                                 |
+| ----------- | ---------------------------------- | ---------------------- | --------------------------------------------------------------------- |
+| `image_io`  | `.png`, `.jpg`, `.jpeg`, `.bmp`    | `imageio` `imageioRGB` | Standard 2D image formats (RGB ensures 3 color channels)              |
+| `cv2_io`    | `.png`, `.jpg`, `.jpeg`, `.bmp`    | `cv2` `cv2RGB`         | Standard 2D image formats using opencv (RGB ensures 3 color channels) |
+| `tif_io`    | `.tif`, `.tiff`                    | `tifffile`             | Multipage TIFF, high bit-depths supported                             |
+| `sitk_io`   | `.nii.gz`, `.nii`, `.mha`, `.nrrd` | `sitk`                 | Medical image formats (3D volumes)                                    |
+| `nib_io`    | `.nii.gz`, `.nii`,                 | `nibabel`              | Alternative medical imaging backend                                   |
+| `blosc2_io` | `.b2nd`                            | `blosc2`,              | Compressed N-dimensional arrays.                                      |
+| `blosc2_io` | `.b2nd`                            | `blosc2pkl`            | Compressed N-dimensional arrays with metadata in a separate pkl file. |
+| `numpy_io`  | `.npy`                             | `numpy`                | Single NumPy array                                                    |
+| `numpy_io`  | `.npz`                             | `numpy`                | Dictionary of arrays                                                  |
 
 ```py
 from vidata.io import (
     load_image, save_image,
+    load_imageRGB,
+    load_cv2, save_cv2,
+    load_cv2RGB, save_cv2RGB,
     load_tif, save_tif,
     load_sitk, save_sitk,
     load_nib, save_nib,
