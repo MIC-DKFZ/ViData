@@ -4,6 +4,8 @@ from typing import Union
 import numpy as np
 from natsort import natsorted
 
+from vidata.io import load_json
+
 PathLike = Union[str, Path]
 
 
@@ -136,7 +138,7 @@ class FileManager:
         Parameters
         ----------
         path : Path
-            Root directory to search.
+            Root directory to search or path to a json file which contains a list of absolute paths.
         file_type : str
             File extension to match (e.g., ".png").
         pattern : str | None
@@ -152,19 +154,24 @@ class FileManager:
         if file_type == "" or path == "":
             return []
 
-        if pattern is None:
-            pattern = "*"
-        elif "*" not in pattern:
-            pattern = "*" + pattern
+        if str(path).endswith(".json"):
+            if Path(path).is_file():
+                files = load_json(path)
+                files = [Path(file) for file in files]
+            else:
+                raise FileNotFoundError(path)
         else:
-            pattern = pattern
+            if pattern is None:
+                pattern = "*"
+            elif "*" not in pattern:
+                pattern = "*" + pattern
 
-        if recursive:
-            files = list(Path(path).rglob(pattern + file_type))
-        else:
-            files = list(Path(path).glob(pattern + file_type))
-        # self.files = natsorted(files, key=lambda p: p.name)
-        return natsorted(files, key=lambda p: p.name)
+            if recursive:
+                files = list(Path(path).rglob(pattern + file_type))
+            else:
+                files = list(Path(path).glob(pattern + file_type))
+                files = natsorted(files, key=lambda p: p.name)
+        return files
 
     def get_name(self, file: str | int, with_file_type=True) -> str:
         """Legacy alias for :meth:`name_from_path` (kept for backward compatibility)."""
@@ -188,7 +195,11 @@ class FileManager:
         """
         if isinstance(file, int):
             file = str(self.files[file])
-        name = str(Path(file).relative_to(self.path))
+        name = (
+            str(Path(file).relative_to(self.path))
+            if not str(self.path).endswith(".json")
+            else str(file)
+        )
         if not include_ext:
             name = name.replace(self.file_type, "")
         return name
@@ -200,7 +211,10 @@ class FileManager:
         rel = Path(name)
         if include_ext and rel.suffix != self.file_type:
             rel = rel.with_suffix(self.file_type)
-        return (self.path / rel).resolve()
+        if str(self.path).endswith(".json"):
+            return rel
+        else:
+            return (self.path / rel).resolve()
 
     def __getitem__(self, item: int):
         return self.files[item]
