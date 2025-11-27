@@ -7,6 +7,7 @@ from .nib_io import load_nib, save_nib, load_nibRO, save_nibRO
 from .tif_io import load_tif, save_tif
 from .blosc2_io import load_blosc2, load_blosc2pkl, save_blosc2, save_blosc2pkl
 from .numpy_io import load_npy, load_npz, save_npy, save_npz
+from .nrrd_io import load_nrrd, save_nrrd
 from .json_io import load_json, save_json, load_jsongz, save_jsongz
 from .pickle_io import load_pickle, save_pickle
 from .txt_io import load_txt, save_txt
@@ -19,6 +20,8 @@ __all__ = [
     "save_nib",
     "load_nibRO",
     "save_nibRO",
+    "load_nrrd",
+    "save_nrrd",
     "load_blosc2",
     "save_blosc2",
     "load_blosc2pkl",

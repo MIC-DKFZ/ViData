@@ -164,13 +164,66 @@ def test_nibRO(dtype, file_ending, size, metadata, tmp_path):
 
     save_nibRO(data, file, metadata)
     data_l, metadata_l = load_nibRO(file)
-    print("D1", data)
-    print("D2", data_l)
-    print(metadata_l)
     assert np.array_equal(data, data_l)
     if metadata is not None:
         for key in metadata:
             assert np.all(metadata_l[key] == metadata[key])
+
+
+@pytest.mark.parametrize("dtype", ["float", "int"])
+@pytest.mark.parametrize(
+    "size, metadata",
+    [
+        ((100, 100, 100), None),
+        ((100, 100), None),
+        (
+            (110, 90, 100),
+            {
+                "spacing": [1, 0.5, 0.25],
+                "origin": [10, 20, 30],
+                "direction": [
+                    [1.0, 0.0, 0.0],
+                    [0.0, -1.0, 0.0],
+                    [0.0, 0.0, -1.0],
+                ],
+            },
+        ),
+        (
+            (110, 90, 100),
+            {
+                "spacing": np.array([1, 0.5, 0.25]),
+                "origin": np.array([10, 20, 30]),
+                "direction": np.array([[1.0, 0.0, 0.0], [0.0, -1.0, 0.0], [0.0, 0.0, -1.0]]),
+            },
+        ),
+        (
+            (110, 90),
+            {
+                "spacing": [1, 0.5],
+                "origin": [10, 20],
+                "direction": [[1.0, 0.0], [0.0, -1.0]],
+            },
+        ),
+        ((120, 100, 80), {"spacing": [1, 0.5, 0.25]}),
+        ((120, 100), {"spacing": [1, 0.5]}),
+    ],
+)
+def test_nrrd(dtype, size, metadata, tmp_path):
+    from vidata.io import load_nrrd, save_nrrd
+
+    file_ending = ".nrrd"
+
+    file = Path(tmp_path).joinpath(f"nrrd_{dtype}{file_ending}")
+
+    data = dummy_data(size, dtype)
+
+    save_nrrd(data, file, metadata)
+    data_l, metadata_l = load_nrrd(file)
+
+    assert np.array_equal(data, data_l)
+    if metadata is not None:
+        for key in metadata:
+            assert np.allclose(metadata_l[key], metadata[key])
 
 
 @pytest.mark.parametrize("dtype", ["float", "int"])
