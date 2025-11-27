@@ -106,6 +106,7 @@ save_xxx(data, "out.ext", meta)
 | `tif_io`    | `.tif`, `.tiff`                    | `tifffile`             | Multipage TIFF, high bit-depths supported                             |
 | `sitk_io`   | `.nii.gz`, `.nii`, `.mha`, `.nrrd` | `sitk`                 | Medical image formats (3D volumes)                                    |
 | `nib_io`    | `.nii.gz`, `.nii`,                 | `nibabel`              | Alternative medical imaging backend                                   |
+| `nrrd_io`   | `.nrrd`                            | `nrrd`                 | Alternative backend for .nrrd files                                   |
 | `blosc2_io` | `.b2nd`                            | `blosc2`,              | Compressed N-dimensional arrays.                                      |
 | `blosc2_io` | `.b2nd`                            | `blosc2pkl`            | Compressed N-dimensional arrays with metadata in a separate pkl file. |
 | `numpy_io`  | `.npy`                             | `numpy`                | Single NumPy array                                                    |
@@ -120,6 +121,7 @@ from vidata.io import (
     load_tif, save_tif,
     load_sitk, save_sitk,
     load_nib, save_nib,
+    load_nrrd, save_nrrd,
     load_blosc2, save_blosc2,
     load_blosc2pkl, save_blosc2pkl,
     load_npy, save_npy,
@@ -141,6 +143,10 @@ save_sitk(vol, "out_sitk.nii.gz", meta)
 # Medical imaging with Nibabel
 vol, meta = load_nib("example.nii.gz")
 save_nib(vol, "out_nib.nii.gz", meta)
+
+# Medical imaging with PyNRRD
+vol, meta = load_nrrd("example.nrrd")
+save_nrrd(vol, "out_nib.nrrd", meta)
 
 # Blosc2 compressed array
 arr, meta = load_blosc2("example.b2nd")
