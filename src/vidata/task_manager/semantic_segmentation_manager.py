@@ -1,8 +1,10 @@
 import numpy as np
 
+from vidata.registry import register_task
 from vidata.task_manager.task_manager import TaskManager
 
 
+@register_task("semseg")
 class SemanticSegmentationManager(TaskManager):
     @staticmethod
     def random(size: tuple[int, ...], num_classes: int) -> np.ndarray:

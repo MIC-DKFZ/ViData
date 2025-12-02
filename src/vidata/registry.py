@@ -13,6 +13,8 @@ WRITER_REGISTRY: dict[str, dict[str, dict[str, Callable[..., Any]]]] = defaultdi
     lambda: defaultdict(dict)
 )
 
+TASK_REGISTRY: dict[str, Any] = {}
+
 
 def register_loader(target: Target, *dtypes: str, backend: str = "default") -> Callable:
     """
@@ -52,6 +54,19 @@ def register_writer(
     return decorator
 
 
+def register_task(name: str):
+    """Register a task class under a string identifier."""
+
+    def decorator(cls):
+        # if name in TASK_REGISTRY:
+        #     raise ValueError(f"Task '{name}' already registered.")
+        TASK_REGISTRY[name] = cls
+        return cls
+
+    return decorator
+
+
 # --- Trigger backend imports ---
 # This must come LAST so the above decorators exist before data_io modules import them
 import vidata.io  # noqa
+import vidata.task_manager  # noqa

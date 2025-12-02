@@ -1,6 +1,9 @@
 import numpy as np
 
+from vidata.registry import register_task
 
+
+@register_task("image")
 class ImageManager:
     @staticmethod
     def random(size: tuple[int, ...], dtype="float") -> np.ndarray:

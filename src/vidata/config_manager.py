@@ -12,9 +12,8 @@ from vidata.loaders import (
     MultilabelStackedLoader,
     SemSegLoader,
 )
+from vidata.registry import TASK_REGISTRY
 from vidata.task_manager import (
-    MultiLabelSegmentationManager,
-    SemanticSegmentationManager,
     TaskManager,
 )
 from vidata.writers import (
@@ -313,10 +312,8 @@ class LayerConfigManager:
         return writer_cls(**args)
 
     def task_manager(self) -> TaskManager:
-        if self.type.lower() == "semseg":
-            return SemanticSegmentationManager()
-        elif self.type.lower() == "multilabel":
-            return MultiLabelSegmentationManager()
+        if self.type.lower() in TASK_REGISTRY:
+            return TASK_REGISTRY[self.type.lower()]
         else:
             raise ValueError(f"No Task manager defined for layer {self.name} and type {self.type}")
 
