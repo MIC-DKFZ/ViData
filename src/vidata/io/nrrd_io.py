@@ -96,7 +96,8 @@ def load_nrrd(file: str | Path) -> tuple[np.ndarray, dict]:
         direction = header["space directions"] / (norms + 1e-12)
     else:
         direction = np.eye(ndims)
-    direction = direction.flatten()  # Flattened SITK style
+    # NRRD uses COLUMN vectors → SITK uses ROW vectors --> .T
+    direction = direction.T.flatten()  # Flattened SITK style
 
     # Convert Metadata from (X,Y,Z) → (Z,Y,X)
     spacing = spacing[::-1]
