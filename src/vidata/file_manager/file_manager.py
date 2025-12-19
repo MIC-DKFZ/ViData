@@ -42,7 +42,7 @@ class FileManager:
         recursive: bool = False,
         lazy_init: bool = False,
     ):
-        self.path = path
+        self.path = Path(path)
         self.file_type = file_type
         self.pattern = pattern
         self.include_names = include_names
@@ -177,7 +177,7 @@ class FileManager:
         """Legacy alias for :meth:`name_from_path` (kept for backward compatibility)."""
         return self.name_from_path(file, with_file_type)
 
-    def name_from_path(self, file: str | int, include_ext: bool = True) -> str:
+    def name_from_path(self, file: Path | str | int, include_ext: bool = True) -> str:
         """
         Get the relative name of a file (e.g., 'subdir/sample.png').
 
@@ -194,14 +194,16 @@ class FileManager:
             Relative file name.
         """
         if isinstance(file, int):
-            file = str(self.files[file])
-        name = (
-            str(Path(file).relative_to(self.path))
-            if not str(self.path).endswith(".json")
-            else str(file)
-        )
-        if not include_ext:
-            name = name.replace(self.file_type, "")
+            file = self.files[file]
+        if not isinstance(file, Path):
+            file = Path(file)
+
+        name_pl = file.relative_to(self.path) if self.path.suffix != ".json" else file
+        name = name_pl.as_posix()
+
+        if not include_ext and name.endswith(self.file_type):
+            name = name[: -len(self.file_type)]
+
         return name
 
     def path_from_name(self, name: str | Path, include_ext=True):
@@ -211,7 +213,7 @@ class FileManager:
         rel = Path(name)
         if include_ext and rel.suffix != self.file_type:
             rel = rel.with_suffix(self.file_type)
-        if str(self.path).endswith(".json"):
+        if self.path.suffix == ".json":
             return rel
         else:
             return (self.path / rel).resolve()

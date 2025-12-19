@@ -5,6 +5,7 @@ stats/
 dataset_cfg/
 tests/temp/
 nodes.md
+playground/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

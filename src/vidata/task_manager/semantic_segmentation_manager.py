@@ -15,7 +15,11 @@ class SemanticSegmentationManager(TaskManager):
         return np.zeros(size, dtype=np.uint8)
 
     @staticmethod
-    def class_ids(data: np.ndarray) -> np.ndarray:
+    def class_ids(
+        data: np.ndarray, return_counts: bool = False
+    ) -> np.ndarray | tuple[np.ndarray, np.ndarray]:
+        if return_counts:
+            return np.unique(data, return_counts=True)
         return np.unique(data)
 
     @staticmethod
@@ -23,7 +27,11 @@ class SemanticSegmentationManager(TaskManager):
         return int(np.sum(data == class_id))
 
     @staticmethod
-    def class_location(data: np.ndarray, class_id: int) -> tuple[np.ndarray, ...]:
+    def class_location(
+        data: np.ndarray, class_id: int, return_mask: bool = False
+    ) -> tuple[np.ndarray, ...] | np.ndarray:
+        if return_mask:
+            return np.asarray(data == class_id)  # data == class_id
         return np.where(data == class_id)
 
     @staticmethod

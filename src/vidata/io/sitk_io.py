@@ -1,3 +1,5 @@
+import locale
+from contextlib import contextmanager
 from pathlib import Path
 
 import numpy as np
@@ -5,6 +7,20 @@ import SimpleITK as sitk
 
 from vidata.registry import register_loader, register_writer
 from vidata.utils.affine import build_affine
+
+
+@contextmanager
+def temporary_c_locale():
+    # Save current LC_NUMERIC
+    old_locale = locale.setlocale(locale.LC_NUMERIC, None)
+
+    try:
+        # Switch to safe C locale
+        locale.setlocale(locale.LC_NUMERIC, "C")
+        yield
+    finally:
+        # Restore original locale
+        locale.setlocale(locale.LC_NUMERIC, old_locale)
 
 
 @register_writer("image", ".nii.gz", ".nii", ".mha", ".nrrd", backend="sitk")
@@ -56,7 +72,9 @@ def load_sitk(file: str | Path) -> tuple[np.ndarray, dict]:
                 - "direction": orientation matrix (np.ndarray)
                 - "affine": computed affine matrix (np.ndarray)
     """
-    image = sitk.ReadImage(file)
+    with temporary_c_locale():
+        image = sitk.ReadImage(file)
+
     array = sitk.GetArrayFromImage(image)
     ndims = len(array.shape)
 

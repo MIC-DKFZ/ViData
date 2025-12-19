@@ -20,7 +20,9 @@ class TaskManager(ABC):
 
     @staticmethod
     @abstractmethod
-    def class_ids(data: np.ndarray) -> np.ndarray:
+    def class_ids(
+        data: np.ndarray, return_counts: bool = False
+    ) -> np.ndarray | tuple[np.ndarray, np.ndarray]:
         """Return a sorted array of unique class IDs present in the data."""
 
     @staticmethod
@@ -30,7 +32,9 @@ class TaskManager(ABC):
 
     @staticmethod
     @abstractmethod
-    def class_location(data: np.ndarray, class_id: int) -> tuple[np.ndarray, ...]:
+    def class_location(
+        data: np.ndarray, class_id: int, return_mask: bool = False
+    ) -> tuple[np.ndarray, ...] | np.ndarray:
         """Return the indices where the given class ID occurs."""
 
     @staticmethod
