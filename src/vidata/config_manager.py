@@ -239,24 +239,38 @@ class LayerConfigManager:
         if self.splits_file is None:
             raise ValueError(f"no splits file defined for {self.name}")
         splits = load_json(self.splits_file)
-
-        if isinstance(splits, list):
-            if fold is None:
-                raise ValueError(
-                    "splits_index/fold is required if your splits_file contains a list"
-                )
-            if not (0 <= fold < len(splits)):
-                raise ValueError(
-                    f"splits_index/fold {fold} is not in range of your splits file with len {len(splits)}"
-                )
-            splits = splits[fold]
-
+        if not isinstance(splits, dict):
+            raise ValueError(f"splits_file must be a dict keyed by split names, got {type(splits)}")
         if split not in splits:
             raise ValueError(f"split {split} is not in splits_file with keys {list(splits.keys())}")
 
-        resolved = splits[split]
-        assert isinstance(resolved, list)  # Should be a list of files
-        return resolved
+        _split = splits[split]
+        if isinstance(_split, list):
+            if len(_split) == 0:
+                return []
+            _fold = 0 if fold is None else fold
+            if not isinstance(_fold, int) or not (0 <= _fold < len(_split)):
+                raise ValueError(
+                    f"fold {_fold} is out of range for split {split} with {len(_split)} folds"
+                )
+            _split = _split[_fold]
+
+        if not isinstance(_split, dict):
+            raise ValueError(
+                f"split {split} must resolve to a dict[layer_name -> list[str]], got {type(_split)}"
+            )
+
+        if self.name not in _split:
+            raise ValueError(
+                f"layer {self.name} is not in splits_file with keys {list(_split.keys())}"
+            )
+
+        files = _split[self.name]
+        if not isinstance(files, list):
+            raise ValueError(
+                f"split {split} for layer {self.name} must be a list of file ids, got {type(files)}"
+            )
+        return files
 
     def file_manager(self, split: str | None = None, fold: int | None = None) -> FileManager:
         _cfg = self.config(split=split)

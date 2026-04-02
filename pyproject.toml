@@ -38,6 +38,7 @@ dependencies = [
     "seaborn",
     "scikit-learn",
     "opencv-python-headless",
+    "pillow",
     "pynrrd",
 ]
 

@@ -24,10 +24,11 @@ layers:
 
 # Splitting (optional)
 splits:
-  splits_file:
-    some/path/splits_final.json # optional: use a file to define splits, content can be:
-    # 1) object: {"train": [...], "val": [...], "test": [...]}
-    # 2) list of folds: [{"train": [...], "val": [...]}, {...}, ...]
+  splits_file: some/path/splits_final.json # optional: use a file to define splits, content can be:
+  # 1) per-split, per-layer: {"train": {"Images": [...], "Labels": [...]}, "val": {"Images": [...], "Labels": [...]}, "test": {...}}
+  # 2) cross-validation per split: {"train": [{"Images": [...], "Labels": [...]}, {...}], "val": [{"Images": [...], "Labels": [...]}, {...}]}
+  # IDs must be exact names relative to each layer path, without file_type extension (stacked: use stack root, e.g. "train_001")
+  # Empty splits are allowed, e.g. "val": []
   # optional: Per-layer overrides for paths/patterns by split.
   train:
     SomeImages: # empty -> use defaults

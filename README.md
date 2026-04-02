@@ -103,6 +103,7 @@ save_xxx(data, "out.ext", meta)
 | ----------- | ---------------------------------- | ---------------------- | --------------------------------------------------------------------- |
 | `image_io`  | `.png`, `.jpg`, `.jpeg`, `.bmp`    | `imageio` `imageioRGB` | Standard 2D image formats (RGB ensures 3 color channels)              |
 | `cv2_io`    | `.png`, `.jpg`, `.jpeg`, `.bmp`    | `cv2` `cv2RGB`         | Standard 2D image formats using opencv (RGB ensures 3 color channels) |
+| `pil_io`    | `.png`, `.jpg`, `.jpeg`, `.bmp`    | `pil` `pilRGB`         | Standard 2D image formats using PIL (RGB ensures 3 color channels)    |
 | `tif_io`    | `.tif`, `.tiff`                    | `tifffile`             | Multipage TIFF, high bit-depths supported                             |
 | `sitk_io`   | `.nii.gz`, `.nii`, `.mha`, `.nrrd` | `sitk`                 | Medical image formats (3D volumes)                                    |
 | `nib_io`    | `.nii.gz`, `.nii`,                 | `nibabel`              | Alternative medical imaging backend                                   |
@@ -481,8 +482,8 @@ fm = FileManager(
     path="data/images",
     file_type=".png",
     pattern="*_image",            # optional; glob-like,
-    include_names=["case_","sample_"], # optional; keep only if any token is in file name
-    exclude_names=["corrupt"],   # optional; drop if any token is in file name
+    include_names=["case_1_image", "sample_7_image"], # optional; exact relative names without file extension
+    exclude_names=["corrupt_2_image"],   # optional; exact relative names without file extension
 )
 print(len(fm), "files")           # > 30 files | how many files are found
 print(fm[0])                      # > data/images/case_1_image.png
@@ -499,8 +500,8 @@ fm = FileManagerStacked(
     path="data/stacked_images",
     file_type=".png",
     pattern="*_image",            # optional; glob-like,
-    include_names=["case_","sample_"], # optional; keep only if any token is in file name
-    exclude_names=["corrupt"],   # optional; drop if any token is in file name
+    include_names=["case_1_image", "sample_7_image"], # optional; exact stack root names
+    exclude_names=["corrupt_2_image"],   # optional; exact stack root names
 )
 print(len(fm), "files")           # > 30 files | how many files are found (number of base path)
 print(fm[0])                      # > data/stacked_images/case_1_image | gives the base path without suffix and dtype
@@ -551,8 +552,10 @@ layers:
 # Splitting (optional)
 splits:
   splits_file: some/path/splits_final.json # optional: use a file to define splits, content can be:
-                              # 1) object: {"train": [...], "val": [...], "test": [...]}
-                              # 2) list of folds: [{"train": [...], "val": [...]}, {...}, ...]
+                              # 1) object: {"train": {"Images": [...], "Labels": [...]}, "val": {"Images": [...], "Labels": [...]}, "test": {...}}
+                              # 2) split-wise fold lists: {"train": [{"Images": [...], "Labels": [...]}, {...}], "val": [{"Images": [...], "Labels": [...]}, {...}]}
+                              # IDs must be exact names relative to each layer path, without file_type extension (stacked: use stack root, e.g. "train_001")
+                              # Empty splits are allowed, e.g. "val": []
   # optional: Per-layer overrides for paths/patterns by split.
   train:
     SomeImages:               # empty -> use defaults

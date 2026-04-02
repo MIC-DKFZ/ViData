@@ -2,6 +2,7 @@
 # ruff: noqa: I001, I002  # disable Ruff's import-sorting checks for this file
 from .image_io import load_image, save_image, load_imageRGB
 from .cv2_io import load_cv2, save_cv2, load_cv2RGB, save_cv2RGB
+from .pil_io import load_pil, save_pil, load_pilRGB, save_pilRGB
 from .sitk_io import load_sitk, save_sitk
 from .nib_io import load_nib, save_nib, load_nibRO, save_nibRO
 from .tif_io import load_tif, save_tif
@@ -35,6 +36,10 @@ __all__ = [
     "save_cv2",
     "load_cv2RGB",
     "save_cv2RGB",
+    "load_pil",
+    "save_pil",
+    "load_pilRGB",
+    "save_pilRGB",
     "load_npy",
     "save_npy",
     "load_npz",

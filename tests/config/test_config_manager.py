@@ -123,7 +123,18 @@ def test_config_manager(simple_config):
 
 
 def test_config_manager_splitfile(simple_config):
-    splits_file = {"train": ["_0", "_2", "_4"], "val": ["_0", "_2"]}
+    splits_file = {
+        "train": {
+            "Images": ["train_0", "train_2", "train_4"],
+            "Labels": ["train_0", "train_2", "train_4"],
+            "MLLabels": ["train_0", "train_2", "train_4"],
+        },
+        "val": {
+            "Images": ["val_0", "val_2"],
+            "Labels": ["val_0", "val_2"],
+            "MLLabels": ["val_0", "val_2"],
+        },
+    }
     save_json(splits_file, Path(simple_config["root"]) / "splits.json")
     simple_config["splits"]["splits_file"] = Path(simple_config["root"]) / "splits.json"
     cm = ConfigManager(simple_config)
@@ -176,7 +187,32 @@ def test_config_manager_splitfile(simple_config):
 
 
 def test_config_manager_splitfile_fold(simple_config):
-    splits_file = [{"train": ["_0", "_2", "_4"], "val": ["_0", "_2"]}]
+    splits_file = {
+        "train": [
+            {
+                "Images": ["train_0", "train_2", "train_4"],
+                "Labels": ["train_0", "train_2", "train_4"],
+                "MLLabels": ["train_0", "train_2", "train_4"],
+            },
+            {
+                "Images": ["train_1", "train_3", "train_5"],
+                "Labels": ["train_1", "train_3", "train_5"],
+                "MLLabels": ["train_1", "train_3", "train_5"],
+            },
+        ],
+        "val": [
+            {
+                "Images": ["val_0", "val_2"],
+                "Labels": ["val_0", "val_2"],
+                "MLLabels": ["val_0", "val_2"],
+            },
+            {
+                "Images": ["val_1", "val_3"],
+                "Labels": ["val_1", "val_3"],
+                "MLLabels": ["val_1", "val_3"],
+            },
+        ],
+    }
     save_json(splits_file, Path(simple_config["root"]) / "splits.json")
     simple_config["splits"]["splits_file"] = Path(simple_config["root"]) / "splits.json"
     cm = ConfigManager(simple_config)
@@ -217,12 +253,45 @@ def test_config_manager_splitfile_fold(simple_config):
 
         l_conf = layer.config("train", 0)
         l_conf["pattern"] = simple_config["layers"][i]["pattern"]
-        fm = layer.file_manager("train", 0)
-        assert isinstance(fm, FileManager)
-        assert len(fm) == LEN_TRAIN // 2
+        fm_fold0 = layer.file_manager("train", 0)
+        assert isinstance(fm_fold0, FileManager)
+        assert len(fm_fold0) == LEN_TRAIN // 2
+
+        fm_fold1 = layer.file_manager("train", 1)
+        assert isinstance(fm_fold1, FileManager)
+        assert len(fm_fold1) == LEN_TRAIN // 2
+
+        names_fold0 = {fm_fold0.get_name(f, with_file_type=False) for f in fm_fold0.files}
+        names_fold1 = {fm_fold1.get_name(f, with_file_type=False) for f in fm_fold1.files}
+        assert names_fold0 != names_fold1
 
         l_conf = layer.config("val", 0)
         l_conf["pattern"] = simple_config["splits"]["val"][layer.name]["pattern"]
-        fm = layer.file_manager("val", 0)
+        fm_fold0 = layer.file_manager("val", 0)
+        assert isinstance(fm_fold0, FileManager)
+        assert len(fm_fold0) == LEN_VAL // 2
+
+        fm_fold1 = layer.file_manager("val", 1)
+        assert isinstance(fm_fold1, FileManager)
+        assert len(fm_fold1) == LEN_VAL // 2
+
+
+def test_config_manager_splitfile_empty_split(simple_config):
+    splits_file = {
+        "train": {
+            "Images": ["train_0", "train_2", "train_4"],
+            "Labels": ["train_0", "train_2", "train_4"],
+            "MLLabels": ["train_0", "train_2", "train_4"],
+        },
+        "val": [],
+    }
+    save_json(splits_file, Path(simple_config["root"]) / "splits.json")
+    simple_config["splits"]["splits_file"] = Path(simple_config["root"]) / "splits.json"
+    cm = ConfigManager(simple_config)
+
+    for layer_name in cm.layer_names():
+        layer = cm.layer(layer_name)
+
+        fm = layer.file_manager("val")
         assert isinstance(fm, FileManager)
-        assert len(fm) == LEN_VAL // 2
+        assert len(fm) == 0

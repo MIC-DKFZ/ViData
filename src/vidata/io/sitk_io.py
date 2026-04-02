@@ -37,19 +37,44 @@ def save_sitk(data: np.ndarray, file: str | Path, metadata: dict | None = None) 
             - "direction" (list or np.ndarray): Flattened or matrix-form direction.
     """
     image_sitk = sitk.GetImageFromArray(data)
+    ndims = data.ndim  # or len(data.shape)
+
     if metadata is not None:
-        if "spacing" in metadata:
-            spacing = metadata["spacing"]
-            spacing = spacing.tolist() if isinstance(spacing, np.ndarray) else spacing
-            image_sitk.SetSpacing(spacing[::-1])
-        if "origin" in metadata:
-            origin = metadata["origin"]
-            origin = origin.tolist() if isinstance(origin, np.ndarray) else origin
-            image_sitk.SetOrigin(origin[::-1])
-        if "direction" in metadata:
-            direction = metadata["direction"]
-            direction = np.array(direction) if not isinstance(direction, np.ndarray) else direction
-            image_sitk.SetDirection(direction.flatten().tolist()[::-1])
+        spacing = metadata.get("spacing")
+        origin = metadata.get("origin")
+        direction = metadata.get("direction")
+
+        if spacing is not None:
+            spacing = np.asarray(spacing, dtype=float).reshape(ndims)
+            image_sitk.SetSpacing(spacing[::-1].tolist())
+
+        if origin is not None:
+            origin = np.asarray(origin, dtype=float).reshape(ndims)
+            image_sitk.SetOrigin(origin[::-1].tolist())
+
+        if direction is not None:
+            # direction = np.asarray(direction, dtype=float).reshape(ndims, ndims)
+            # image_sitk.SetDirection(direction[::-1, ::-1].ravel().tolist())
+            P = np.arange(ndims)[::-1]
+            direction = np.asarray(metadata["direction"], dtype=float).reshape(ndims, ndims)
+            direction_sitk = direction[np.ix_(P, P)]  # numpy-order -> sitk-order
+            image_sitk.SetDirection(direction_sitk.ravel().tolist())
+            # direction = metadata["direction"]
+            # direction = np.array(direction) if not isinstance(direction, np.ndarray) else direction
+            # image_sitk.SetDirection(direction.flatten().tolist()[::-1])
+    # if metadata is not None:
+    #     if "spacing" in metadata:
+    #         spacing = metadata["spacing"]
+    #         spacing = spacing.tolist() if isinstance(spacing, np.ndarray) else spacing
+    #         image_sitk.SetSpacing(spacing[::-1])
+    #     if "origin" in metadata:
+    #         origin = metadata["origin"]
+    #         origin = origin.tolist() if isinstance(origin, np.ndarray) else origin
+    #         image_sitk.SetOrigin(origin[::-1])
+    #     if "direction" in metadata:
+    #         direction = metadata["direction"]
+    #         direction = np.array(direction) if not isinstance(direction, np.ndarray) else direction
+    #         image_sitk.SetDirection(direction.flatten().tolist()[::-1])
 
     sitk.WriteImage(image_sitk, str(file), useCompression=True)
     return [str(file)]
@@ -76,12 +101,19 @@ def load_sitk(file: str | Path) -> tuple[np.ndarray, dict]:
         image = sitk.ReadImage(file)
 
     array = sitk.GetArrayFromImage(image)
-    ndims = len(array.shape)
+    ndims = image.GetDimension()
+    P = np.arange(ndims)[::-1]
 
-    spacing = np.array(image.GetSpacing()[::-1])
-    origin = np.array(image.GetOrigin()[::-1])
-    direction = np.array(image.GetDirection()[::-1]).reshape(ndims, ndims)
+    direction = np.asarray(image.GetDirection(), dtype=float).reshape(ndims, ndims)[np.ix_(P, P)]
 
+    spacing = np.asarray(image.GetSpacing(), dtype=float)[P]
+    origin = np.asarray(image.GetOrigin(), dtype=float)[P]
+
+    # ndims = len(array.shape)
+    # spacing = np.array(image.GetSpacing()[::-1])
+    # origin = np.array(image.GetOrigin()[::-1])
+    # direction = np.array(image.GetDirection()[::-1]).reshape(ndims, ndims)
+    #
     affine = build_affine(ndims, spacing, origin, direction)
 
     metadata = {

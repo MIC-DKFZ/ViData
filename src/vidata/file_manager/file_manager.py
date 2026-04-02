@@ -23,9 +23,10 @@ class FileManager:
     pattern : str  | None
         Glob-like pattern (e.g., "*_image", "_0000")
     include_names: list[str] | None
-        Keep files whose RELATIVE path contains ANY of these substrings.
+        Keep files whose relative name (without file extension) matches one of these values.
     exclude_names: list[str] | None
-        Drop files whose RELATIVE path contains ANY of these substrings. (Exclude wins.)
+        Drop files whose relative name (without file extension) matches one of these values.
+        (Exclude wins.)
     recursive: bool
         Whether to recursively search subdirectories.
     lazy_init : bool
@@ -63,9 +64,7 @@ class FileManager:
         applying inclusion/exclusion filters.
         """
         self._files = self.collect_files(self.path, self.file_type, self.pattern, self.recursive)
-        self._files = self.filter_files(
-            self._files, self.path, self.include_names, self.exclude_names
-        )
+        self._files = self.filter_files(self._files, self.include_names, self.exclude_names)
 
     @property
     def files(self) -> list[Path]:
@@ -85,26 +84,23 @@ class FileManager:
         """Directly override the internal file list (advanced use only)."""
         self._files = value
 
-    @staticmethod
     def filter_files(
+        self,
         files: list[Path],
-        path: Path,
         include_names: list[str] | None = None,
         exclude_names: list[str] | None = None,
     ) -> list[Path]:
         """
-        Filter a list of files based on inclusion or exclusion substrings.
+        Filter a list of files based on exact relative names (without file extension).
 
         Parameters
         ----------
         files : list[Path]
             Input file list.
-        path : Path
-            Root path used to compute relative paths for filtering.
         include_names : list[str] | None
-            Substrings; keep files containing any of these in their relative path.
+            Relative names; keep files whose name matches one of these values.
         exclude_names : list[str] | None
-            Substrings; remove files containing any of these in their relative path.
+            Relative names; remove files whose name matches one of these values.
 
         Returns
         -------
@@ -112,19 +108,18 @@ class FileManager:
             Filtered file list.
         """
         if include_names is not None:
-            _files_re = [str(_file.relative_to(path)) for _file in files]
+            include_names_set = set(include_names)
             files = [
-                _file
-                for _file, rel in zip(list(files), _files_re, strict=False)
-                if any(_token in rel for _token in include_names)
+                file
+                for file in files
+                if self.get_name(file, with_file_type=False) in include_names_set
             ]
-
         if exclude_names is not None:
-            _files_re = [str(_file.relative_to(path)) for _file in files]
+            exclude_names_set = set(exclude_names)
             files = [
-                _file
-                for _file, rel in zip(list(files), _files_re, strict=False)
-                if not any(_token in rel for _token in exclude_names)
+                file
+                for file in files
+                if self.get_name(file, with_file_type=False) not in exclude_names_set
             ]
         return files
 
@@ -170,10 +165,10 @@ class FileManager:
                 files = list(Path(path).rglob(pattern + file_type))
             else:
                 files = list(Path(path).glob(pattern + file_type))
-                files = natsorted(files, key=lambda p: p.name)
+            files = natsorted(files, key=lambda p: p.relative_to(path).as_posix())
         return files
 
-    def get_name(self, file: str | int, with_file_type=True) -> str:
+    def get_name(self, file: Path | str | int, with_file_type=True) -> str:
         """Legacy alias for :meth:`name_from_path` (kept for backward compatibility)."""
         return self.name_from_path(file, with_file_type)
 

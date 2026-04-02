@@ -14,19 +14,19 @@ def main():
         raise FileExistsError(f"Output path already exists: {output_path}")
 
     n_ilayers = input("Number of Image layers: ")
-    n_ilayers = None if n_ilayers == "" else int(n_ilayers)
+    n_ilayers = 0 if n_ilayers == "" else int(n_ilayers)
 
     n_llayers = input("Number of Label layers: ")
-    n_llayers = None if n_llayers == "" else int(n_llayers)
+    n_llayers = 0 if n_llayers == "" else int(n_llayers)
 
     f_type = input("File Type (e.g. .nii.gz, .png): ")
     f_type = None if f_type == "" else f_type
-    if n_ilayers is not None and n_ilayers > 0:
+    if n_ilayers > 0:
         n_channels = input("Number of Image Channels: ")
         n_channels = None if n_channels == "" else int(n_channels)
     else:
         n_channels = "TODO"
-    if n_llayers is not None and n_llayers > 0:
+    if n_llayers > 0:
         n_classes = input("Number of Label Classes: ")
         n_classes = None if n_classes == "" else int(n_classes)
         task = input("Semantic Segmentation(S)/MultilabelSegmentation(M): ")
@@ -52,7 +52,7 @@ def main():
             "file_type": f_type,
             "pattern": None,
             "backend": None,
-            "channel": n_channels,  # optional
+            "channels": n_channels,  # optional
             "file_stack": False,
         }
         for i in range(n_ilayers)
@@ -75,13 +75,13 @@ def main():
     config["layers"] = layers_i + layers_l
 
     if split:
-        config["split"] = {"splits_file": None, "train": None, "val": None, "test": None}
+        config["splits"] = {"splits_file": None, "train": None, "val": None, "test": None}
         layer_names = {}
         for layer in config["layers"]:
             layer_names[layer["name"]] = None
-        config["split"]["train"] = layer_names
-        config["split"]["val"] = layer_names
-        config["split"]["test"] = layer_names
+        config["splits"]["train"] = layer_names
+        config["splits"]["val"] = layer_names
+        config["splits"]["test"] = layer_names
 
     OmegaConf.save(config, output_path)
     print(f"✔ Wrote template to: {output_path}")
